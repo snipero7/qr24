@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Dialog, DialogHeader } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export function AddPaymentDialog({ debtId }: { debtId: string }) {
   const [open, setOpen] = useState(false);
@@ -26,21 +29,16 @@ export function AddPaymentDialog({ debtId }: { debtId: string }) {
 
   return (
     <div>
-      <button className="bg-blue-600 text-white px-3 py-1 rounded" onClick={()=>setOpen(true)}>إضافة دفعة</button>
-      {open && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-4 rounded w-[320px] space-y-3">
-            <h3 className="font-semibold">دفعة جديدة</h3>
-            {error && <div className="text-red-600 text-sm">{error}</div>}
-            <input type="number" className="border rounded p-2 w-full" value={amount} onChange={(e)=>setAmount(Number(e.target.value))} placeholder="المبلغ" />
-            <div className="flex gap-2 justify-end">
-              <button className="px-3 py-1" onClick={()=>setOpen(false)}>إلغاء</button>
-              <button disabled={loading} className="bg-blue-600 text-white px-3 py-1 rounded" onClick={submit}>{loading?"جارٍ...":"تأكيد"}</button>
-            </div>
-          </div>
+      <Button size="sm" onClick={()=>setOpen(true)}>إضافة دفعة</Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogHeader title="دفعة جديدة" />
+        {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
+        <Input type="number" value={amount} onChange={(e)=>setAmount(Number(e.target.value))} placeholder="المبلغ" />
+        <div className="flex gap-2 justify-end mt-3">
+          <Button variant="outline" size="sm" onClick={()=>setOpen(false)}>إلغاء</Button>
+          <Button disabled={loading} size="sm" onClick={submit}>{loading?"جارٍ...":"تأكيد"}</Button>
         </div>
-      )}
+      </Dialog>
     </div>
   );
 }
-

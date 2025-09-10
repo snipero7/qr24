@@ -1,6 +1,10 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 
 export default function NewOrderPage() {
   const r = useRouter();
@@ -38,33 +42,23 @@ export default function NewOrderPage() {
       <h1 className="text-xl font-bold">طلب جديد</h1>
       {error && <div className="text-red-600 text-sm">{error}</div>}
       <form action={onSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input name="name" label="اسم العميل" required />
-        <Input name="phone" label="جوال" required />
-        <Input name="deviceModel" label="نوع الجهاز" />
-        <Input name="imei" label="IMEI" />
-        <Input name="service" label="الخدمة" required />
-        <Input name="originalPrice" label="السعر التقديري" type="number" />
+        <Labeled label="اسم العميل"><Input name="name" required /></Labeled>
+        <Labeled label="جوال"><Input name="phone" required /></Labeled>
+        <Labeled label="نوع الجهاز"><Input name="deviceModel" /></Labeled>
+        <Labeled label="IMEI"><Input name="imei" /></Labeled>
+        <Labeled label="الخدمة"><Input name="service" required /></Labeled>
+        <Labeled label="السعر التقديري"><Input name="originalPrice" type="number" /></Labeled>
         <div className="sm:col-span-2">
-          <label className="block text-sm text-gray-600 mb-1">ملاحظات</label>
-          <textarea name="notes" className="w-full border rounded p-2" rows={3} />
+          <Labeled label="ملاحظات"><Textarea name="notes" rows={3} /></Labeled>
         </div>
         <div className="sm:col-span-2">
-          <button disabled={loading} className="rounded bg-blue-600 text-white px-4 py-2">
-            {loading ? "جارٍ الحفظ..." : "حفظ وإنشاء"}
-          </button>
+          <Button disabled={loading}>{loading ? "جارٍ الحفظ..." : "حفظ وإنشاء"}</Button>
         </div>
       </form>
     </div>
   );
 }
 
-function Input(props: { name: string; label: string; type?: string; required?: boolean }) {
-  return (
-    <div>
-      <label className="block text-sm text-gray-600 mb-1" htmlFor={props.name}>{props.label}</label>
-      <input id={props.name} name={props.name} type={props.type || "text"} required={props.required}
-             className="w-full border rounded p-2" />
-    </div>
-  );
+function Labeled({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div><label className="block text-sm text-gray-600 mb-1">{label}</label>{children}</div>;
 }
-
