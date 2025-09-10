@@ -2,9 +2,9 @@ import { prisma } from "@/server/db";
 import { deliverOrderSchema, errorResponse } from "@/server/validation";
 import { makeQrPayload } from "@/server/qr";
 import { generateReceiptPdf } from "@/server/receipt";
-import fs from "node:fs/promises";
 import path from "node:path";
 import { requireAuth } from "@/server/auth";
+import { saveReceipt } from "@/server/storage";
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -46,12 +46,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       collectedAt: delivered.collectedAt!,
       customer: { name: order.customer.name, phone: order.customer.phone },
     }, dataUrl);
-    const receiptsDir = path.join(process.cwd(), "public", "receipts");
-    await fs.mkdir(receiptsDir, { recursive: true });
     const fileName = `${order.code}.pdf`;
-    const filePath = path.join(receiptsDir, fileName);
-    await fs.writeFile(filePath, pdfBuf);
-    const receiptUrl = `/receipts/${fileName}`;
+    const key = path.posix.join("receipts", fileName);
+    const receiptUrl = await saveReceipt(pdfBuf, key, "application/pdf");
 
     await prisma.order.update({ where: { id: delivered.id }, data: { receiptUrl } });
 

@@ -51,6 +51,16 @@ Endpoints مهمة:
   - CLERK: إنشاء الطلبات، تحديث الحالة، التسليم.
   - TECH: الاطلاع وتحديث الحالة فقط (لا ديون ولا تسليم).
 
+## تخزين الإيصالات (S3/R2)
+
+- افتراضيًا تُحفَظ الإيصالات تحت `public/receipts/`.
+- لتفعيل الرفع إلى S3/R2 (أو أي S3-compatible):
+  - عيّن القيم في `.env`:
+    - `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET`
+    - `S3_ENDPOINT` (لـ R2/MinIO) اختياري
+    - `S3_PUBLIC_BASE` (اختياري لروابط التحميل العامة). إن لم تُحدد، يحاول النظام استخدام نمط `https://<bucket>.s3.amazonaws.com/<key>`.
+  - عند التسليم، يُرفَع PDF إلى `receipts/<code>.pdf` ويُحفظ الرابط في `receiptUrl`.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
