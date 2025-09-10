@@ -1,6 +1,8 @@
 import { prisma } from "@/server/db";
 import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
+import { DeliverDialog } from "@/components/DeliverDialog";
+import { QuickStatus } from "@/components/orders/QuickStatus";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","DELIVERED","CANCELED"] as const;
 
@@ -37,6 +39,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
               <th className="p-2">الجوال</th>
               <th className="p-2">الخدمة</th>
               <th className="p-2">الحالة</th>
+              <th className="p-2">سريع</th>
               <th className="p-2">إجراء</th>
             </tr>
           </thead>
@@ -48,7 +51,13 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
                 <td className="p-2">{o.customer.phone}</td>
                 <td className="p-2">{o.service}</td>
                 <td className="p-2">{o.status}</td>
+                <td className="p-2">
+                  <QuickStatus orderId={o.id} current={o.status} />
+                </td>
                 <td className="p-2"><a className="text-blue-600" href={`/orders/${o.id}`}>تفاصيل</a></td>
+                {o.status !== "DELIVERED" && (
+                  <td className="p-2"><DeliverDialog orderId={o.id} /></td>
+                )}
               </tr>
             ))}
           </tbody>

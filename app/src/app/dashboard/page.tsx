@@ -5,21 +5,26 @@ import { redirect } from "next/navigation";
 export default async function Dashboard() {
   const session = await getAuthSession();
   if (!session) redirect("/signin");
-  const [summary, recent] = await Promise.all([
-    prisma.order.aggregate({
-      _sum: { collectedPrice: true },
-      _count: { _all: true },
-    }),
-    prisma.order.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      include: { customer: true },
-    }),
+  const startOfDay = new Date();
+  startOfDay.setHours(0,0,0,0);
+  const startOfMonth = new Date(startOfDay);
+  startOfMonth.setDate(1);
+
+  const [summary, recent, inProgressCount, debts] = await Promise.all([
+    prisma.order.aggregate({ _sum: { collectedPrice: true }, _count: { _all: true } }),
+    prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 8, include: { customer: true } }),
+    prisma.order.count({ where: { status: { in: ["NEW","IN_PROGRESS","WAITING_PARTS","READY"] } } }),
+    prisma.debt.findMany({ include: { payments: true } }),
   ]);
 
   const ordersCount = summary._count._all;
   const collected = Number(summary._sum.collectedPrice || 0);
-  const inProgressCount = await prisma.order.count({ where: { status: { in: ["NEW","IN_PROGRESS","WAITING_PARTS","READY"] } } });
+  const collectedToday = Number((await prisma.order.aggregate({ _sum: { collectedPrice: true }, where: { collectedAt: { gte: startOfDay } } }))._sum.collectedPrice || 0);
+  const collectedMonth = Number((await prisma.order.aggregate({ _sum: { collectedPrice: true }, where: { collectedAt: { gte: startOfMonth } } }))._sum.collectedPrice || 0);
+  const totalDebtRemaining = debts.reduce((acc, d) => {
+    const paid = d.payments.reduce((s, p) => s + Number(p.amount), 0);
+    return acc + Math.max(0, Number(d.amount) - paid);
+  }, 0);
 
   return (
     <div className="space-y-6">
@@ -28,6 +33,11 @@ export default async function Dashboard() {
         <Card title="إجمالي الطلبات" value={ordersCount} />
         <Card title="الإيراد المُحصّل" value={`${collected.toFixed(2)} ر.س`} />
         <Card title="أجهزة قيد العمل" value={inProgressCount} />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card title="محصّل اليوم" value={`${collectedToday.toFixed(2)} ر.س`} />
+        <Card title="محصّل الشهر" value={`${collectedMonth.toFixed(2)} ر.س`} />
+        <Card title="الديون المتبقية" value={`${totalDebtRemaining.toFixed(2)} ر.س`} />
       </div>
 
       <section>
