@@ -1,5 +1,5 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, Image, pdf } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image, renderToBuffer } from "@react-pdf/renderer";
 
 type OrderInfo = {
   code: string;
@@ -60,8 +60,6 @@ export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
     </Document>
   );
 
-  const instance = pdf(doc);
-  const buffer = await instance.toBuffer();
-  return Buffer.from(buffer);
+  const buffer = await renderToBuffer(doc);
+  return buffer;
 }
-
