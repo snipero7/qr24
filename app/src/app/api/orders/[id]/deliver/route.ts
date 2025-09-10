@@ -1,6 +1,7 @@
 import { prisma } from "@/server/db";
 import { deliverOrderSchema, errorResponse } from "@/server/validation";
 import { makeQrPayload } from "@/server/qr";
+import { generateReceiptPdf } from "@/server/receipt";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -32,15 +33,21 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       return u;
     });
 
-    // Generate a simple receipt placeholder (PNG QR saved locally) as mock storage
+    // Generate PDF receipt and save locally as mock storage
     const { dataUrl } = await makeQrPayload(order.code);
-    const b64 = dataUrl.split(",")[1] ?? "";
-    const buf = Buffer.from(b64, "base64");
+    const pdfBuf = await generateReceiptPdf({
+      code: order.code,
+      service: order.service,
+      deviceModel: order.deviceModel,
+      collectedPrice: Number(parsed.data.collectedPrice),
+      collectedAt: delivered.collectedAt!,
+      customer: { name: order.customer.name, phone: order.customer.phone },
+    }, dataUrl);
     const receiptsDir = path.join(process.cwd(), "public", "receipts");
     await fs.mkdir(receiptsDir, { recursive: true });
-    const fileName = `${order.code}.png`;
+    const fileName = `${order.code}.pdf`;
     const filePath = path.join(receiptsDir, fileName);
-    await fs.writeFile(filePath, buf);
+    await fs.writeFile(filePath, pdfBuf);
     const receiptUrl = `/receipts/${fileName}`;
 
     await prisma.order.update({ where: { id: delivered.id }, data: { receiptUrl } });
@@ -50,4 +57,3 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return errorResponse("SERVER_ERROR", e?.message || "خطأ");
   }
 }
-

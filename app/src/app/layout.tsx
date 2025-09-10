@@ -31,6 +31,8 @@ export default function RootLayout({
           <nav className="max-w-5xl mx-auto px-4 py-3 flex gap-4">
             <a className="font-semibold" href="/dashboard">الرئيسية</a>
             <a href="/orders/new">طلب جديد</a>
+            <a href="/orders">الطلبات</a>
+            <a href="/debts">الديون</a>
             <a href="/track/demo12345">تتبع (تجريبي)</a>
           </nav>
         </header>
