@@ -89,6 +89,16 @@ Endpoints مهمة:
   - الديون: زر “واتساب” يرسل تمبليت التذكير مع `{remaining}` (معطل إذا لا يوجد رقم صالح).
 - ملاحظة: هذه الطريقة لا ترسل تلقائيًا؛ تفتح واتساب فقط وعلى المستخدم الضغط للإرسال.
 
+### تصميم إيصال PDF بالعربية
+
+- يدعم RTL وخط عربي (إن وُفر): ضع خطوطك في `public/fonts/` مثل:
+  - `Cairo-Regular.ttf`, `Cairo-Bold.ttf`
+  - سيسجلها النظام تلقائيًا إن وُجدت، وإلا يُستخدم الخط الافتراضي.
+- عدّل بيانات المتجر عبر `.env`:
+  - `NEXT_PUBLIC_STORE_NAME`, `NEXT_PUBLIC_STORE_ADDRESS`
+  - `NEXT_PUBLIC_STORE_LOGO` (اسم ملف تحت `public/` مثل `logo.png`)
+- المكوّن المسؤول: `app/src/server/receipt.tsx` (يولّد PDF باستخدام `renderToBuffer`).
+
 - افتراضيًا تُحفَظ الإيصالات تحت `public/receipts/`.
 - لتفعيل الرفع إلى S3/R2 (أو أي S3-compatible):
   - عيّن القيم في `.env`:
