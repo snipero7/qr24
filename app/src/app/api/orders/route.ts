@@ -45,11 +45,17 @@ export async function GET(req: Request) {
   const auth = await requireAuth(["ADMIN","CLERK","TECH"]);
   if (!auth.ok) return Response.json({ code: "UNAUTHORIZED", message: auth.message }, { status: auth.status });
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("query") ?? undefined;
-  const status = searchParams.get("status") as any;
+  const query = searchParams.get("query") ?? searchParams.get("q") ?? undefined;
+  const status = (searchParams.get("status") as any) || undefined;
   const page = parseInt(searchParams.get("page") || "1");
-  const take = 20;
+  const take = Math.min(parseInt(searchParams.get("take") || "20"), 100);
   const skip = (page - 1) * take;
+
+  const createdFrom = searchParams.get("createdFrom");
+  const createdTo = searchParams.get("createdTo");
+  const priceMin = searchParams.get("priceMin");
+  const priceMax = searchParams.get("priceMax");
+  const phone = searchParams.get("phone") || undefined;
 
   const where: any = {};
   if (status) where.status = status;
@@ -59,15 +65,20 @@ export async function GET(req: Request) {
       { customer: { is: { phone: { contains: query } } } },
     ];
   }
+  if (phone) where.customer = { is: { phone: { contains: phone } } };
+  if (createdFrom || createdTo) {
+    where.createdAt = {};
+    if (createdFrom) where.createdAt.gte = new Date(createdFrom);
+    if (createdTo) { const d = new Date(createdTo); d.setHours(23,59,59,999); where.createdAt.lte = d; }
+  }
+  if (priceMin || priceMax) {
+    where.originalPrice = {};
+    if (priceMin) where.originalPrice.gte = Number(priceMin);
+    if (priceMax) where.originalPrice.lte = Number(priceMax);
+  }
 
   const [items, total] = await Promise.all([
-    prisma.order.findMany({
-      where,
-      skip,
-      take,
-      orderBy: { createdAt: "desc" },
-      include: { customer: true },
-    }),
+    prisma.order.findMany({ where, skip, take, orderBy: { createdAt: "desc" }, include: { customer: true } }),
     prisma.order.count({ where }),
   ]);
 

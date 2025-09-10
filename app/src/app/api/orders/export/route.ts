@@ -9,10 +9,26 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q") ?? searchParams.get("query") ?? undefined;
   const status = searchParams.get("status") ?? undefined;
+  const phone = searchParams.get("phone") ?? undefined;
+  const createdFrom = searchParams.get("createdFrom");
+  const createdTo = searchParams.get("createdTo");
+  const priceMin = searchParams.get("priceMin");
+  const priceMax = searchParams.get("priceMax");
 
   const where: any = {};
   if (status) where.status = status;
   if (q) where.OR = [{ code: { contains: q, mode: "insensitive" } }, { customer: { is: { phone: { contains: q } } } }];
+  if (phone) where.customer = { is: { phone: { contains: phone } } };
+  if (createdFrom || createdTo) {
+    where.createdAt = {};
+    if (createdFrom) where.createdAt.gte = new Date(createdFrom);
+    if (createdTo) { const d = new Date(createdTo); d.setHours(23,59,59,999); where.createdAt.lte = d; }
+  }
+  if (priceMin || priceMax) {
+    where.originalPrice = {};
+    if (priceMin) where.originalPrice.gte = Number(priceMin);
+    if (priceMax) where.originalPrice.lte = Number(priceMax);
+  }
 
   const items = await prisma.order.findMany({
     where,
@@ -47,4 +63,3 @@ export async function GET(req: Request) {
     },
   });
 }
-
