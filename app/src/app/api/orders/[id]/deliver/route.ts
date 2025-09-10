@@ -28,7 +28,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         where: { id: params.id },
         data: {
           status: "DELIVERED",
-          collectedPrice: new prisma.Prisma.Decimal(collectedPrice),
+          collectedPrice: collectedPrice,
           collectedAt: now,
         },
       });

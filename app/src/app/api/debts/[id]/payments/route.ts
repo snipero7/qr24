@@ -14,7 +14,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const debt = await prisma.debt.findUnique({ where: { id: params.id }, include: { payments: true } });
     if (!debt) return errorResponse("NOT_FOUND", "الدين غير موجود");
 
-    const payment = await prisma.debtPayment.create({ data: { debtId: params.id, amount: new prisma.Prisma.Decimal(amount) } });
+    const payment = await prisma.debtPayment.create({ data: { debtId: params.id, amount } });
 
     const { totalPaid, remaining, status } = await recomputeDebt(params.id);
 

@@ -28,7 +28,7 @@ export async function POST(req: Request) {
         deviceModel,
         imei,
         service,
-        originalPrice: new prisma.Prisma.Decimal(originalPrice),
+        originalPrice: originalPrice,
         status: "NEW",
         statusLogs: { create: { to: "NEW", note: "Order created" } },
       },
