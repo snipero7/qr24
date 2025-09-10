@@ -1,7 +1,7 @@
 import { prisma } from "@/server/db";
 import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
-import { StatCard, Card } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export default async function Dashboard() {
@@ -75,11 +75,4 @@ export default async function Dashboard() {
   );
 }
 
-function Card({ title, value }: { title: string; value: any }) {
-  return (
-    <div className="rounded-lg border p-4 bg-white">
-      <div className="text-gray-500 text-sm">{title}</div>
-      <div className="text-2xl font-semibold mt-1">{value}</div>
-    </div>
-  );
-}
+//
