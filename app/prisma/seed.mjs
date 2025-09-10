@@ -72,7 +72,7 @@ async function main() {
   });
 
   const debt = await prisma.debt.create({
-    data: { shopName: 'محل التقانة', service: 'سوفت وير', amount: 100, status: 'OPEN' },
+    data: { shopName: 'محل التقانة', phone: '0551112222', service: 'سوفت وير', amount: 100, status: 'OPEN' },
   });
   await prisma.debtPayment.create({ data: { debtId: debt.id, amount: 50 } });
 

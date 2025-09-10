@@ -79,6 +79,7 @@ model OrderStatusLog {
 model Debt {
   id        String      @id @default(cuid())
   shopName  String
+  phone     String?     // رقم المحل (اختياري)
   service   String
   amount    Decimal
   status    DebtStatus  @default(OPEN)

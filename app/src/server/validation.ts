@@ -25,6 +25,7 @@ export const deliverOrderSchema = z.object({
 
 export const createDebtSchema = z.object({
   shopName: z.string().min(1),
+  phone: z.string().optional(),
   service: z.string().min(1),
   amount: z.coerce.number().positive(),
   notes: z.string().optional(),
@@ -43,4 +44,3 @@ export type AddPaymentInput = z.infer<typeof addPaymentSchema>;
 export function errorResponse(code: string, message: string, details?: unknown) {
   return Response.json({ code, message, details }, { status: 400 });
 }
-

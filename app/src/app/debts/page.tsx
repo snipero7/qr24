@@ -21,6 +21,7 @@ export default async function DebtsPage() {
           <THead>
             <TR>
               <TH>المحل</TH>
+              <TH>الجوال</TH>
               <TH>الخدمة</TH>
               <TH>الإجمالي</TH>
               <TH>المدفوع</TH>
@@ -37,6 +38,7 @@ export default async function DebtsPage() {
               return (
                 <TR key={d.id}>
                   <TD><a className="text-blue-600" href={`/debts/${d.id}`}>{d.shopName}</a></TD>
+                  <TD>{d.phone || '-'}</TD>
                   <TD>{d.service}</TD>
                   <TD>{String(d.amount)}</TD>
                   <TD>{paid}</TD>
@@ -44,7 +46,7 @@ export default async function DebtsPage() {
                   <TD>{d.status}</TD>
                   <TD>
                     <WhatsAppButton
-                      phone={undefined /* لا يوجد رقم حالياً في نموذج الدين */}
+                      phone={d.phone}
                       templateKey="debt.reminder"
                       params={{ shopName: d.shopName, remaining, service: d.service }}
                     />
@@ -62,8 +64,9 @@ export default async function DebtsPage() {
 
 function NewDebtForm() {
   return (
-    <form action={createDebt} className="grid grid-cols-1 sm:grid-cols-5 gap-2 border p-3 rounded bg-white">
+    <form action={createDebt} className="grid grid-cols-1 sm:grid-cols-6 gap-2 border p-3 rounded bg-white">
       <input name="shopName" required placeholder="اسم المحل" className="border rounded p-2" />
+      <input name="phone" placeholder="جوال المحل" className="border rounded p-2" />
       <input name="service" required placeholder="الخدمة" className="border rounded p-2" />
       <input name="amount" required type="number" placeholder="المبلغ" className="border rounded p-2" />
       <input name="notes" placeholder="ملاحظات" className="border rounded p-2" />
@@ -76,9 +79,10 @@ async function createDebt(formData: FormData) {
   "use server";
   const payload = {
     shopName: String(formData.get("shopName")),
+    phone: (formData.get("phone") as string) || undefined,
     service: String(formData.get("service")),
     amount: Number(formData.get("amount")),
     notes: (formData.get("notes") as string) || undefined,
   };
-  await prisma.debt.create({ data: { shopName: payload.shopName, service: payload.service, amount: payload.amount, notes: payload.notes, status: 'OPEN' } });
+  await prisma.debt.create({ data: { shopName: payload.shopName, phone: payload.phone, service: payload.service, amount: payload.amount, notes: payload.notes, status: 'OPEN' } });
 }
