@@ -70,7 +70,7 @@ function NewDebtForm() {
       <input name="service" required placeholder="الخدمة" className="border rounded p-2" />
       <input name="amount" required type="number" placeholder="المبلغ" className="border rounded p-2" />
       <input name="notes" placeholder="ملاحظات" className="border rounded p-2" />
-      <button className="bg-blue-600 text-white rounded px-3">إضافة دين</button>
+      <button className="btn-primary">إضافة دين</button>
     </form>
   );
 }

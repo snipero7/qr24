@@ -43,9 +43,8 @@ export function ChangeStatusForm({ orderId, current }: { orderId: string; curren
         <label className="block text-sm text-gray-600 mb-1">ملاحظة</label>
         <input className="border rounded p-2 w-full" value={note} onChange={(e)=>setNote(e.target.value)} placeholder="اختياري" />
       </div>
-      <button disabled={loading} className="bg-blue-600 text-white px-3 py-2 rounded">حفظ</button>
+      <button disabled={loading} className="btn-primary">حفظ</button>
       {error && <span className="text-red-600 text-sm">{error}</span>}
     </form>
   );
 }
-

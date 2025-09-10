@@ -84,7 +84,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
         <input type="number" name="priceMin" defaultValue={priceMin} placeholder="سعر من" className="border rounded p-2" />
         <input type="number" name="priceMax" defaultValue={priceMax} placeholder="سعر إلى" className="border rounded p-2" />
         <div className="flex gap-2 sm:col-span-2">
-          <button className="bg-blue-600 text-white px-4 rounded">بحث</button>
+          <button className="btn-primary">بحث</button>
           <a className="border px-3 rounded flex items-center" href={`/api/orders/export?${new URLSearchParams({ q: q||"", status: status||"", phone: phone||"", createdFrom: createdFrom||"", createdTo: createdTo||"", priceMin: priceMin||"", priceMax: priceMax||"" }).toString()}`}>تصدير CSV</a>
           <a className="border px-3 rounded flex items-center" href="/orders">إعادة تعيين</a>
         </div>

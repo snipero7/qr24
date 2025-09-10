@@ -24,7 +24,7 @@ export default async function UsersPage() {
             <option value="TECH">TECH</option>
             <option value="CLERK">CLERK</option>
           </select>
-          <button className="bg-blue-600 text-white rounded px-3">إنشاء</button>
+          <button className="btn-primary">إنشاء</button>
         </form>
       </section>
 
@@ -87,4 +87,3 @@ async function updateRole(formData: FormData) {
   const role = String(formData.get("role")) as any;
   await prisma.user.update({ where: { id }, data: { role } });
 }
-
