@@ -44,6 +44,33 @@ async function main() {
     },
   });
 
+  // READY order for WhatsApp button tests
+  await prisma.order.create({
+    data: {
+      code: 'ready12345',
+      customerId: customer.id,
+      service: 'اختبار',
+      originalPrice: 100,
+      status: 'READY',
+      statusLogs: { create: { to: 'READY' } },
+    },
+  });
+
+  // DELIVERED order for WhatsApp delivered template
+  await prisma.order.create({
+    data: {
+      code: 'deliv12345',
+      customerId: customer.id,
+      service: 'استلام نهائي',
+      originalPrice: 150,
+      collectedPrice: 120,
+      collectedAt: new Date(),
+      receiptUrl: '/receipts/sample.pdf',
+      status: 'DELIVERED',
+      statusLogs: { create: { to: 'DELIVERED' } },
+    },
+  });
+
   const debt = await prisma.debt.create({
     data: { shopName: 'محل التقانة', service: 'سوفت وير', amount: 100, status: 'OPEN' },
   });

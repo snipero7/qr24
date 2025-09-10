@@ -5,6 +5,7 @@ import { DeliverDialog } from "@/components/DeliverDialog";
 import { QuickStatus } from "@/components/orders/QuickStatus";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","DELIVERED","CANCELED"] as const;
 
@@ -96,6 +97,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
               <TH>الجوال</TH>
               <TH>الخدمة</TH>
               <TH>الحالة</TH>
+              <TH>واتساب</TH>
               <TH>سريع</TH>
               <TH>إجراء</TH>
             </TR>
@@ -108,6 +110,22 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
                 <TD>{o.customer.phone}</TD>
                 <TD>{o.service}</TD>
                 <TD>{o.status}</TD>
+                <TD>
+                  {o.status === 'READY' && (
+                    <WhatsAppButton
+                      phone={o.customer.phone}
+                      templateKey="order.ready"
+                      params={{ customerName: o.customer.name, orderCode: o.code, service: o.service }}
+                    />
+                  )}
+                  {o.status === 'DELIVERED' && (
+                    <WhatsAppButton
+                      phone={o.customer.phone}
+                      templateKey="order.delivered"
+                      params={{ customerName: o.customer.name, collectedPrice: Number(o.collectedPrice ?? 0), receiptUrl: o.receiptUrl || '' }}
+                    />
+                  )}
+                </TD>
                 <TD><QuickStatus orderId={o.id} current={o.status} /></TD>
                 <TD><a className="text-blue-600" href={`/orders/${o.id}`}>تفاصيل</a>{o.status !== "DELIVERED" && (<> · <DeliverDialog orderId={o.id} /></>)}</TD>
               </TR>

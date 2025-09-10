@@ -62,6 +62,20 @@ Endpoints مهمة:
 
 ## تخزين الإيصالات (S3/R2)
 
+## إشعارات واتساب (روابط مباشرة)
+
+- الأدوات: `src/lib/whatsapp.ts`
+  - `toE164KSA`: يحوّل الأرقام السعودية إلى E.164 تلقائيًا (`05xxxxxxxx` أو `5xxxxxxxx` ⇒ `9665xxxxxxxx`).
+  - `renderTemplate`: يحقن المتغيرات ويرمّز النص بـ `encodeURIComponent`.
+  - `buildWhatsAppLink`: يبني رابط `wa.me` النهائي.
+- القوالب: `src/config/notifications.ts`
+  - `order.ready`, `order.delivered`, `debt.reminder`
+  - يمكن تعديل نصوصها أو متغيرات `NEXT_PUBLIC_STORE_NAME` و`NEXT_PUBLIC_STORE_ADDRESS`.
+- الاستخدام في الواجهة:
+  - الطلبات: زر “واتساب” يظهر في الجدول. عند READY يستخدم تمبليت الجاهزية، وعند DELIVERED يستخدم تمبليت التسليم مع `collectedPrice` و`receiptUrl`.
+  - الديون: زر “واتساب” يرسل تمبليت التذكير مع `{remaining}` (معطل إذا لا يوجد رقم صالح).
+- ملاحظة: هذه الطريقة لا ترسل تلقائيًا؛ تفتح واتساب فقط وعلى المستخدم الضغط للإرسال.
+
 - افتراضيًا تُحفَظ الإيصالات تحت `public/receipts/`.
 - لتفعيل الرفع إلى S3/R2 (أو أي S3-compatible):
   - عيّن القيم في `.env`:

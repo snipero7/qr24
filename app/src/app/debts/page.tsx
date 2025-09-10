@@ -3,6 +3,7 @@ import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 
 export default async function DebtsPage() {
   const session = await getAuthSession();
@@ -25,6 +26,7 @@ export default async function DebtsPage() {
               <TH>المدفوع</TH>
               <TH>المتبقي</TH>
               <TH>الحالة</TH>
+              <TH>واتساب</TH>
               <TH>إجراء</TH>
             </TR>
           </THead>
@@ -40,6 +42,13 @@ export default async function DebtsPage() {
                   <TD>{paid}</TD>
                   <TD>{remaining}</TD>
                   <TD>{d.status}</TD>
+                  <TD>
+                    <WhatsAppButton
+                      phone={undefined /* لا يوجد رقم حالياً في نموذج الدين */}
+                      templateKey="debt.reminder"
+                      params={{ shopName: d.shopName, remaining, service: d.service }}
+                    />
+                  </TD>
                   <TD><AddPaymentDialog debtId={d.id} /></TD>
                 </TR>
               );
