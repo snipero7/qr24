@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { ActionBar } from "@/components/ui/action-bar";
+import { Sparkline } from "@/components/ui/sparkline";
 
 export default async function ReportsPage({ searchParams }: { searchParams: { from?: string; to?: string } }) {
   const session = await getAuthSession();
@@ -61,7 +62,10 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
 
       <section>
         <h2 className="font-semibold mb-3">محصّل آخر 30 يوم</h2>
-        <div className="overflow-x-auto">
+        <div className="card">
+          <Sparkline values={[...rows].reverse().map(r => Number(r.sum))} />
+        </div>
+        <div className="overflow-x-auto mt-4">
           <Table>
             <THead>
               <TR>

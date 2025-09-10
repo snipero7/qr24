@@ -9,6 +9,13 @@
   --surface: #FFFFFF;
   --text: #0B1220;
   --muted: #6B7280;
+  /* Status badge colors */
+  --status-NEW-bg: #DBEAFE;         --status-NEW-fg: #1E3A8A;
+  --status-IN_PROGRESS-bg: #FEF3C7; --status-IN_PROGRESS-fg: #B45309;
+  --status-WAITING_PARTS-bg: #EDE9FE; --status-WAITING_PARTS-fg: #6D28D9;
+  --status-READY-bg: #D1FAE5;       --status-READY-fg: #065F46;
+  --status-DELIVERED-bg: #E5E7EB;   --status-DELIVERED-fg: #374151;
+  --status-CANCELED-bg: #FEE2E2;    --status-CANCELED-fg: #991B1B;
 }
 
 @theme inline {
