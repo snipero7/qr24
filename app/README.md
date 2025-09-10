@@ -64,6 +64,19 @@ Endpoints مهمة:
 
 ## إشعارات واتساب (روابط مباشرة)
 
+## تصميم RTL + Theme
+
+- اتجاه RTL مفعّل على الجذر (`html lang="ar" dir="rtl"`).
+- متغيرات ألوان قابلة للتعديل في `app/src/app/globals.css`:
+  - `--color-primary`, `--color-primary-700`, `--color-accent`, `--surface`, `--text`, `--muted`.
+- الوضع الداكن عبر `ThemeToggle` يبدّل `data-theme` و/أو `class=dark` على `<html>`.
+- مكونات قابلة لإعادة الاستخدام:
+  - `KpiCard`: `app/src/components/ui/kpi-card.tsx`
+  - `StatusBadge`: `app/src/components/ui/status-badge.tsx`
+  - `DataTable`: `app/src/components/ui/data-table.tsx`
+  - `ActionBar`: `app/src/components/ui/action-bar.tsx`
+  - `FormGrid`: `app/src/components/ui/form-grid.tsx`
+- صفحات محدّثة: Dashboard/Orders/Debts/Track تستخدم الشارات والجداول والبطاقات الجديدة.
 - الأدوات: `src/lib/whatsapp.ts`
   - `toE164KSA`: يحوّل الأرقام السعودية إلى E.164 تلقائيًا (`05xxxxxxxx` أو `5xxxxxxxx` ⇒ `9665xxxxxxxx`).
   - `renderTemplate`: يحقن المتغيرات ويرمّز النص بـ `encodeURIComponent`.

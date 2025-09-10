@@ -1,5 +1,6 @@
 import { prisma } from "@/server/db";
 import { verifySignature } from "@/server/qr";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export default async function TrackPage({ params, searchParams }: { params: { code: string }, searchParams: { t?: string } }) {
   const code = params.code;
@@ -17,12 +18,11 @@ export default async function TrackPage({ params, searchParams }: { params: { co
       <h1 className="text-2xl font-bold mb-4">تتبع الطلب</h1>
       {!verified && <p className="text-red-600">توقيع غير صالح</p>}
       <div className="space-y-2">
-        <p>كود الطلب: <b>{order.code}</b></p>
-        <p>الحالة الحالية: <b>{order.status}</b></p>
+        <p>كود الطلب: <b className="font-mono">{order.code}</b></p>
+        <p className="flex items-center gap-2">الحالة الحالية: <StatusBadge status={order.status as any} /></p>
         {order.deviceModel && <p>نوع الجهاز: {order.deviceModel}</p>}
         <p className="text-sm text-gray-500">آخر تحديث: {new Date(order.updatedAt).toLocaleString()}</p>
       </div>
     </div>
   );
 }
-

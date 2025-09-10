@@ -6,6 +6,8 @@ import { QuickStatus } from "@/components/orders/QuickStatus";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { ActionBar } from "@/components/ui/action-bar";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","DELIVERED","CANCELED"] as const;
 
@@ -70,7 +72,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold">الطلبات</h1>
-      <form className="grid grid-cols-1 sm:grid-cols-6 gap-2 items-end">
+      <ActionBar>
         <input name="q" defaultValue={q} placeholder="بحث بالكود أو الجوال" className="border rounded p-2 sm:col-span-2" />
         <input name="phone" defaultValue={phone} placeholder="رقم الجوال" className="border rounded p-2" />
         <select name="status" defaultValue={status} className="border rounded p-2">
@@ -86,7 +88,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
           <a className="border px-3 rounded flex items-center" href={`/api/orders/export?${new URLSearchParams({ q: q||"", status: status||"", phone: phone||"", createdFrom: createdFrom||"", createdTo: createdTo||"", priceMin: priceMin||"", priceMax: priceMax||"" }).toString()}`}>تصدير CSV</a>
           <a className="border px-3 rounded flex items-center" href="/orders">إعادة تعيين</a>
         </div>
-      </form>
+      </ActionBar>
 
       <div className="overflow-x-auto">
         <Table>
@@ -109,7 +111,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
                 <TD>{o.customer.name}</TD>
                 <TD>{o.customer.phone}</TD>
                 <TD>{o.service}</TD>
-                <TD>{o.status}</TD>
+                <TD><StatusBadge status={o.status as any} /></TD>
                 <TD>
                   {o.status === 'READY' && (
                     <WhatsAppButton

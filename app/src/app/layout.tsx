@@ -26,8 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
+        >
         <Providers>
           <header className="border-b bg-gray-50/50">
             <nav className="max-w-5xl mx-auto px-4 py-3 flex gap-4 items-center">

@@ -15,9 +15,10 @@ export function ThemeToggle() {
   function applyTheme(t: Theme) {
     const html = document.documentElement;
     html.removeAttribute("data-theme");
-    if (t === "dark") html.setAttribute("data-theme", "dark");
-    else if (t === "light") html.setAttribute("data-theme", "light");
-    // system => no attribute, falls back to prefers-color-scheme
+    html.classList.remove('dark','light');
+    if (t === "dark") { html.setAttribute("data-theme", "dark"); html.classList.add('dark'); }
+    else if (t === "light") { html.setAttribute("data-theme", "light"); html.classList.add('light'); }
+    // system => no attribute/class, falls back to prefers-color-scheme
   }
 
   function change(t: Theme) {
@@ -38,4 +39,3 @@ export function ThemeToggle() {
 function btn(active: boolean) {
   return `border rounded px-2 py-1 ${active? 'bg-gray-900 text-white border-gray-900 dark:bg-gray-100 dark:text-black' : 'bg-white hover:bg-gray-50'}`;
 }
-

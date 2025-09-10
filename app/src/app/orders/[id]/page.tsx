@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { DeliverDialog } from "@/components/DeliverDialog";
 import { ChangeStatusForm } from "@/components/ChangeStatusForm";
 import Link from "next/link";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 
 export default async function OrderShow({ params }: { params: { id: string } }) {
   const session = await getAuthSession();
@@ -20,7 +22,7 @@ export default async function OrderShow({ params }: { params: { id: string } }) 
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Info label="الكود" value={<code className="font-mono">{o.code}</code>} />
-        <Info label="الحالة" value={o.status} />
+        <Info label="الحالة" value={<StatusBadge status={o.status as any} />} />
         <Info label="العميل" value={`${o.customer.name} (${o.customer.phone})`} />
         <Info label="الخدمة" value={o.service} />
         {o.deviceModel && <Info label="الجهاز" value={o.deviceModel} />}
@@ -34,6 +36,11 @@ export default async function OrderShow({ params }: { params: { id: string } }) 
       <div className="flex gap-4 items-center">
         <ChangeStatusForm orderId={o.id} current={o.status} />
         {o.status !== "DELIVERED" && <DeliverDialog orderId={o.id} />}
+        <WhatsAppButton
+          phone={o.customer.phone}
+          templateKey={o.status === 'READY' ? 'order.ready' : 'order.delivered'}
+          params={{ customerName: o.customer.name, orderCode: o.code, service: o.service, collectedPrice: Number(o.collectedPrice ?? 0), receiptUrl: o.receiptUrl || '' }}
+        />
       </div>
 
       <section>

@@ -3,6 +3,7 @@ import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export default async function DebtShow({ params }: { params: { id: string } }) {
   const session = await getAuthSession();
@@ -27,7 +28,7 @@ export default async function DebtShow({ params }: { params: { id: string } }) {
         <Info label="الإجمالي" value={String(d.amount)} />
         <Info label="المدفوع" value={String(paid)} />
         <Info label="المتبقي" value={String(remaining)} />
-        <Info label="الحالة" value={d.status} />
+        <Info label="الحالة" value={<StatusBadge status={d.status as any} />} />
       </section>
 
       <section>

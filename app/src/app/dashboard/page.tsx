@@ -1,8 +1,10 @@
 import { prisma } from "@/server/db";
 import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
-import { StatCard } from "@/components/ui/card";
+import { KpiCard } from "@/components/ui/kpi-card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { ClipboardList, Wallet, PiggyBank, Users, Receipt, QrCode } from "lucide-react";
 
 export default async function Dashboard() {
   const session = await getAuthSession();
@@ -31,15 +33,15 @@ export default async function Dashboard() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">لوحة التحكم</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="إجمالي الطلبات" value={ordersCount} />
-        <StatCard label="الإيراد المُحصّل" value={`${collected.toFixed(2)} ر.س`} />
-        <StatCard label="أجهزة قيد العمل" value={inProgressCount} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <KpiCard title="إجمالي الطلبات" value={ordersCount} icon={<ClipboardList size={18} />} />
+        <KpiCard title="الإيراد المُحصّل" value={`${collected.toFixed(2)} ر.س`} icon={<Wallet size={18} />} />
+        <KpiCard title="أجهزة قيد العمل" value={inProgressCount} icon={<Users size={18} />} />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="محصّل اليوم" value={`${collectedToday.toFixed(2)} ر.س`} />
-        <StatCard label="محصّل الشهر" value={`${collectedMonth.toFixed(2)} ر.س`} />
-        <StatCard label="الديون المتبقية" value={`${totalDebtRemaining.toFixed(2)} ر.س`} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <KpiCard title="محصّل اليوم" value={`${collectedToday.toFixed(2)} ر.س`} icon={<Receipt size={18} />} />
+        <KpiCard title="محصّل الشهر" value={`${collectedMonth.toFixed(2)} ر.س`} icon={<QrCode size={18} />} />
+        <KpiCard title="الديون المتبقية" value={`${totalDebtRemaining.toFixed(2)} ر.س`} icon={<PiggyBank size={18} />} />
       </div>
 
       <section>
@@ -63,7 +65,7 @@ export default async function Dashboard() {
                   </TD>
                   <TD>{o.customer.name}</TD>
                   <TD>{o.service}</TD>
-                  <TD>{o.status}</TD>
+                  <TD><StatusBadge status={o.status as any} /></TD>
                   <TD>{new Date(o.createdAt).toLocaleString()}</TD>
                 </TR>
               ))}

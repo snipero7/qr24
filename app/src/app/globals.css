@@ -2,7 +2,13 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0B1220;
+  --color-primary: #1E3A8A; /* indigo-900 */
+  --color-primary-700:#1D4ED8;/* indigo-700 */
+  --color-accent:  #38BDF8;   /* sky-400 */
+  --surface: #FFFFFF;
+  --text: #0B1220;
+  --muted: #6B7280;
 }
 
 @theme inline {
@@ -13,11 +19,12 @@
 }
 
 /* Dark mode via attribute overrides (ThemeToggle) */
-html[data-theme='dark'] {
+html[data-theme='dark'], html.dark {
   --background: #0a0a0a;
-  --foreground: #ededed;
+  --foreground: #FFFFFF;
+  --surface: #0F172A; /* slate-900 */
 }
-html[data-theme='light'] {
+html[data-theme='light'], html.light {
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -35,3 +42,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+h1 { @apply text-2xl font-bold; }
+h2 { @apply text-lg font-semibold; }
+.container { @apply mx-auto max-w-7xl p-6; }
+.card { @apply rounded-2xl border shadow-sm p-6 bg-[var(--surface)]; }
+.btn-primary { @apply bg-[var(--color-primary)] hover:bg-[var(--color-primary-700)] text-white rounded-lg h-10 px-4; }
+.input { @apply rounded-lg border bg-[var(--surface)] p-2; }
+.focus-ring { @apply focus:ring-2 focus:ring-[color:rgb(30_58_138_/_0.4)]; }
