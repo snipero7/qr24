@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { UserNav } from "@/components/UserNav";
 import { Providers } from "@/components/Providers";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({
               <a href="/track/demo12345">تتبع (تجريبي)</a>
               <a href="/users">المستخدمون</a>
               <UserNav />
+              <ThemeToggle />
             </nav>
           </header>
           <main className="max-w-5xl mx-auto px-4 py-6">{children}</main>

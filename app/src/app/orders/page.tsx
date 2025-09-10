@@ -4,10 +4,11 @@ import { redirect } from "next/navigation";
 import { DeliverDialog } from "@/components/DeliverDialog";
 import { QuickStatus } from "@/components/orders/QuickStatus";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","DELIVERED","CANCELED"] as const;
 
-export default async function OrdersPage({ searchParams }: { searchParams: { q?: string; status?: string; phone?: string; createdFrom?: string; createdTo?: string; priceMin?: string; priceMax?: string } }) {
+export default async function OrdersPage({ searchParams }: { searchParams: { q?: string; status?: string; phone?: string; createdFrom?: string; createdTo?: string; priceMin?: string; priceMax?: string; page?: string; take?: string } }) {
   const session = await getAuthSession();
   if (!session) redirect("/signin");
   const q = searchParams.q?.trim();
@@ -17,6 +18,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
   const createdTo = searchParams.createdTo;
   const priceMin = searchParams.priceMin;
   const priceMax = searchParams.priceMax;
+  const page = Number(searchParams.page || 1);
+  const take = Math.min(Number(searchParams.take || 20), 100);
 
   const where: any = {};
   if (status) where.status = status;
@@ -33,7 +36,35 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
     if (priceMax) where.originalPrice.lte = Number(priceMax);
   }
 
-  const items = await prisma.order.findMany({ where, include: { customer: true }, orderBy: { createdAt: "desc" }, take: 50 });
+  const [items, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      include: { customer: true },
+      orderBy: { createdAt: "desc" },
+      take,
+      skip: (page - 1) * take,
+    }),
+    prisma.order.count({ where })
+  ]);
+  const pages = Math.max(1, Math.ceil(total / take));
+  const makeQS = (overrides: Record<string, string | number | undefined>) => {
+    const params = new URLSearchParams({
+      q: q || "",
+      phone: phone || "",
+      status: status || "",
+      createdFrom: createdFrom || "",
+      createdTo: createdTo || "",
+      priceMin: priceMin || "",
+      priceMax: priceMax || "",
+      take: String(take),
+      page: String(page),
+    });
+    for (const [k, v] of Object.entries(overrides)) {
+      if (v === undefined || v === "") params.delete(k);
+      else params.set(k, String(v));
+    }
+    return params.toString();
+  };
 
   return (
     <div className="space-y-4">
@@ -83,6 +114,29 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
             ))}
           </TBody>
         </Table>
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-sm text-gray-600">إجمالي: {total} — صفحة {page} من {pages}</div>
+        <div className="flex items-center gap-2">
+          <a className="border rounded px-3 py-1 text-sm disabled:opacity-50" aria-disabled={page<=1} href={`/orders?${makeQS({ page: Math.max(1, page-1) })}`}>السابق</a>
+          <a className="border rounded px-3 py-1 text-sm disabled:opacity-50" aria-disabled={page>=pages} href={`/orders?${makeQS({ page: Math.min(pages, page+1) })}`}>التالي</a>
+          <form className="flex items-center gap-1" action="/orders">
+            {/** preserve filters */}
+            <input type="hidden" name="q" value={q} />
+            <input type="hidden" name="phone" value={phone} />
+            <input type="hidden" name="status" value={status} />
+            <input type="hidden" name="createdFrom" value={createdFrom} />
+            <input type="hidden" name="createdTo" value={createdTo} />
+            <input type="hidden" name="priceMin" value={priceMin} />
+            <input type="hidden" name="priceMax" value={priceMax} />
+            <label className="text-sm text-gray-600">لكل صفحة</label>
+            <select name="take" defaultValue={String(take)} className="border rounded p-1 text-sm">
+              {[10,20,50,100].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+            <Button size="sm">تطبيق</Button>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -12,8 +12,19 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode via attribute overrides (ThemeToggle) */
+html[data-theme='dark'] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+html[data-theme='light'] {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/* Fallback to prefers-color-scheme if no explicit theme */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
