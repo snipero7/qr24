@@ -28,6 +28,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
           {statuses.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <button className="bg-blue-600 text-white px-4 rounded">بحث</button>
+        <a className="border px-3 rounded flex items-center" href={`/api/orders/export?${new URLSearchParams({ q: q||"", status: status||"" }).toString()}`}>تصدير CSV</a>
       </form>
 
       <div className="overflow-x-auto">

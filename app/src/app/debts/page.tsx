@@ -10,7 +10,10 @@ export default async function DebtsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-bold">الديون</h1>
-      <NewDebtForm />
+      <div className="flex items-center gap-2">
+        <NewDebtForm />
+        <a className="border px-3 py-2 rounded" href="/api/debts/export">تصدير CSV</a>
+      </div>
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
