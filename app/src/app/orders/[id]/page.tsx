@@ -28,6 +28,7 @@ export default async function OrderShow({ params }: { params: { id: string } }) 
         <Info label="السعر التقديري" value={`${o.originalPrice}`} />
         {o.collectedPrice && <Info label="المحصّل" value={`${o.collectedPrice}`} />}
         {o.receiptUrl && <Info label="الإيصال" value={<a className="text-blue-600" href={o.receiptUrl} target="_blank">تنزيل PDF</a>} />}
+        <Info label="طباعة" value={<a className="text-blue-600" href={`/orders/${o.id}/receipt`} target="_blank">طباعة HTML</a>} />
       </section>
 
       <div className="flex gap-4 items-center">

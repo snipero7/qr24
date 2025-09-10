@@ -37,6 +37,7 @@ export default function RootLayout({
               <a href="/debts">الديون</a>
               <a href="/track/demo12345">تتبع (تجريبي)</a>
               <a href="/users">المستخدمون</a>
+              <a href="/reports">التقارير</a>
               <UserNav />
               <ThemeToggle />
             </nav>
