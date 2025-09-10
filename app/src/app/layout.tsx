@@ -35,6 +35,7 @@ export default function RootLayout({
               <a href="/orders">الطلبات</a>
               <a href="/debts">الديون</a>
               <a href="/track/demo12345">تتبع (تجريبي)</a>
+              <a href="/users">المستخدمون</a>
               <UserNav />
             </nav>
           </header>

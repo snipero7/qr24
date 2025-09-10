@@ -11,6 +11,22 @@ async function main() {
     create: { name: 'Admin', email: 'admin@example.com', passwordHash, role: 'ADMIN' },
   });
 
+  // TECH user
+  const techHash = await bcrypt.hash('tech123', 10);
+  await prisma.user.upsert({
+    where: { email: 'tech@example.com' },
+    update: {},
+    create: { name: 'Tech User', email: 'tech@example.com', passwordHash: techHash, role: 'TECH' },
+  });
+
+  // CLERK user
+  const clerkHash = await bcrypt.hash('clerk123', 10);
+  await prisma.user.upsert({
+    where: { email: 'clerk@example.com' },
+    update: {},
+    create: { name: 'Clerk User', email: 'clerk@example.com', passwordHash: clerkHash, role: 'CLERK' },
+  });
+
   const customer = await prisma.customer.upsert({
     where: { phone: '0550000000' },
     update: { name: 'عميل تجريبي' },
