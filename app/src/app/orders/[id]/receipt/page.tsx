@@ -1,5 +1,6 @@
 import { prisma } from "@/server/db";
 import { makeQrPayload } from "@/server/qr";
+import { PrintButton } from "@/components/PrintButton";
 
 export default async function ReceiptPrintPage({ params }: { params: { id: string } }) {
   const o = await prisma.order.findUnique({ where: { id: params.id }, include: { customer: true } });
@@ -26,7 +27,7 @@ export default async function ReceiptPrintPage({ params }: { params: { id: strin
       </div>
       <p className="text-xs text-gray-500">هذا الإيصال يحتوي رمز QR لتتبع الطلب دون كشف بيانات حساسة.</p>
       <div className="mt-6 no-print">
-        <button onClick={() => window.print()} className="border rounded px-3 py-2">طباعة</button>
+        <PrintButton />
       </div>
       <style>{`@media print { .no-print { display:none } body { background: #fff } }`}</style>
     </div>
