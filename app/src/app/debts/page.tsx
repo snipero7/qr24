@@ -30,7 +30,7 @@ export default async function DebtsPage() {
               const remaining = Math.max(0, Number(d.amount)-paid);
               return (
                 <tr key={d.id} className="border-b">
-                  <td className="p-2">{d.shopName}</td>
+                  <td className="p-2"><a className="text-blue-600" href={`/debts/${d.id}`}>{d.shopName}</a></td>
                   <td className="p-2">{d.service}</td>
                   <td className="p-2">{String(d.amount)}</td>
                   <td className="p-2">{paid}</td>

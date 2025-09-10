@@ -12,7 +12,8 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "node prisma/seed.mjs",
-    "test": "vitest"
+    "test": "vitest",
+    "type-check": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",
