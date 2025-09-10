@@ -1,8 +1,11 @@
 import { prisma } from "@/server/db";
 import { updateStatusSchema, errorResponse } from "@/server/validation";
+import { requireAuth } from "@/server/auth";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
+    const auth = await requireAuth(["ADMIN","CLERK","TECH"]);
+    if (!auth.ok) return errorResponse("UNAUTHORIZED", auth.message);
     const body = await req.json();
     const parsed = updateStatusSchema.safeParse(body);
     if (!parsed.success) return errorResponse("INVALID_INPUT", "بيانات غير صالحة", parsed.error.flatten());
@@ -26,4 +29,3 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return errorResponse("SERVER_ERROR", e?.message || "خطأ");
   }
 }
-

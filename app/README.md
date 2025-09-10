@@ -42,6 +42,15 @@ Endpoints مهمة:
 - GET `/api/reports/summary` ملخص الإحصاءات
 - Page `/track/[code]` تتبع الطلب عبر الكود
 
+## الدخول والصلاحيات
+
+- صفحة الدخول: `/signin`
+- مستخدم seed: بريد `admin@example.com` كلمة المرور `admin123`
+- الصلاحيات:
+  - ADMIN: كامل الصلاحيات.
+  - CLERK: إنشاء الطلبات، تحديث الحالة، التسليم.
+  - TECH: الاطلاع وتحديث الحالة فقط (لا ديون ولا تسليم).
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

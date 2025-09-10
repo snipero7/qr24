@@ -4,9 +4,12 @@ import { makeQrPayload } from "@/server/qr";
 import { generateReceiptPdf } from "@/server/receipt";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { requireAuth } from "@/server/auth";
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
+    const auth = await requireAuth(["ADMIN","CLERK"]);
+    if (!auth.ok) return errorResponse("UNAUTHORIZED", auth.message);
     const body = await req.json();
     const parsed = deliverOrderSchema.safeParse(body);
     if (!parsed.success) return errorResponse("INVALID_INPUT", "بيانات غير صالحة", parsed.error.flatten());

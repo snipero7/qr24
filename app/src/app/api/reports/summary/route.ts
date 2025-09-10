@@ -1,6 +1,9 @@
 import { prisma } from "@/server/db";
+import { requireAuth } from "@/server/auth";
 
 export async function GET() {
+  const auth = await requireAuth(["ADMIN","CLERK","TECH"]);
+  if (!auth.ok) return Response.json({ code: "UNAUTHORIZED", message: auth.message }, { status: auth.status });
   const [ordersCount, collectedSumRaw, inProgressCount, debts] = await Promise.all([
     prisma.order.count(),
     prisma.order.aggregate({ _sum: { collectedPrice: true } }),
@@ -21,4 +24,3 @@ export async function GET() {
     totalDebtRemaining,
   });
 }
-

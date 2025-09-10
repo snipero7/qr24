@@ -1,9 +1,13 @@
 import { prisma } from "@/server/db";
+import { getAuthSession } from "@/server/auth";
+import { redirect } from "next/navigation";
 import { DeliverDialog } from "@/components/DeliverDialog";
 import { ChangeStatusForm } from "@/components/ChangeStatusForm";
 import Link from "next/link";
 
 export default async function OrderShow({ params }: { params: { id: string } }) {
+  const session = await getAuthSession();
+  if (!session) redirect("/signin");
   const o = await prisma.order.findUnique({ where: { id: params.id }, include: { customer: true, statusLogs: { orderBy: { at: "desc" } } } });
   if (!o) return <div className="p-6">لا يوجد طلب.</div>;
 

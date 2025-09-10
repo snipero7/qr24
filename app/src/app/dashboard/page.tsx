@@ -1,6 +1,10 @@
 import { prisma } from "@/server/db";
+import { getAuthSession } from "@/server/auth";
+import { redirect } from "next/navigation";
 
 export default async function Dashboard() {
+  const session = await getAuthSession();
+  if (!session) redirect("/signin");
   const [summary, recent] = await Promise.all([
     prisma.order.aggregate({
       _sum: { collectedPrice: true },
@@ -67,4 +71,3 @@ function Card({ title, value }: { title: string; value: any }) {
     </div>
   );
 }
-

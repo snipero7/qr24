@@ -1,7 +1,11 @@
 import { prisma } from "@/server/db";
+import { getAuthSession } from "@/server/auth";
+import { redirect } from "next/navigation";
 import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
 
 export default async function DebtsPage() {
+  const session = await getAuthSession();
+  if (!session) redirect("/signin");
   const items = await prisma.debt.findMany({ include: { payments: true }, orderBy: { createdAt: "desc" } });
   return (
     <div className="space-y-6">

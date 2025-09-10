@@ -1,8 +1,12 @@
 import { prisma } from "@/server/db";
+import { getAuthSession } from "@/server/auth";
+import { redirect } from "next/navigation";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","DELIVERED","CANCELED"] as const;
 
 export default async function OrdersPage({ searchParams }: { searchParams: { q?: string; status?: string } }) {
+  const session = await getAuthSession();
+  if (!session) redirect("/signin");
   const q = searchParams.q?.trim();
   const status = searchParams.status && statuses.includes(searchParams.status as any) ? searchParams.status : undefined;
 
@@ -53,4 +57,3 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
     </div>
   );
 }
-

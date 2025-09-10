@@ -1,8 +1,11 @@
 import { prisma } from "@/server/db";
 import { createDebtSchema, errorResponse } from "@/server/validation";
+import { requireAuth } from "@/server/auth";
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAuth(["ADMIN"]);
+    if (!auth.ok) return errorResponse("UNAUTHORIZED", auth.message);
     const body = await req.json();
     const parsed = createDebtSchema.safeParse(body);
     if (!parsed.success) return errorResponse("INVALID_INPUT", "بيانات غير صالحة", parsed.error.flatten());
@@ -17,7 +20,8 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
+  const auth = await requireAuth(["ADMIN"]);
+  if (!auth.ok) return Response.json({ code: "UNAUTHORIZED", message: auth.message }, { status: auth.status });
   const items = await prisma.debt.findMany({ include: { payments: true }, orderBy: { createdAt: "desc" } });
   return Response.json(items);
 }
-

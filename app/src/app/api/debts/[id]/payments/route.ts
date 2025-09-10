@@ -1,8 +1,11 @@
 import { prisma } from "@/server/db";
 import { addPaymentSchema, errorResponse } from "@/server/validation";
+import { requireAuth } from "@/server/auth";
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
+    const auth = await requireAuth(["ADMIN"]);
+    if (!auth.ok) return errorResponse("UNAUTHORIZED", auth.message);
     const body = await req.json();
     const parsed = addPaymentSchema.safeParse(body);
     if (!parsed.success) return errorResponse("INVALID_INPUT", "بيانات غير صالحة", parsed.error.flatten());
@@ -33,4 +36,3 @@ async function recomputeDebt(debtId: string) {
   await prisma.debt.update({ where: { id: d.id }, data: { status } });
   return { totalPaid, remaining, status };
 }
-

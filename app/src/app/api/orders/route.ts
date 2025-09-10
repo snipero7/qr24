@@ -1,9 +1,12 @@
 import { prisma } from "@/server/db";
 import { createOrderSchema, errorResponse } from "@/server/validation";
 import { generateShortCode } from "@/server/qr";
+import { requireAuth } from "@/server/auth";
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAuth(["ADMIN","CLERK"]);
+    if (!auth.ok) return Response.json({ code: "UNAUTHORIZED", message: auth.message }, { status: auth.status });
     const body = await req.json();
     const parsed = createOrderSchema.safeParse(body);
     if (!parsed.success) return errorResponse("INVALID_INPUT", "بيانات غير صالحة", parsed.error.flatten());
@@ -39,6 +42,8 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
+  const auth = await requireAuth(["ADMIN","CLERK","TECH"]);
+  if (!auth.ok) return Response.json({ code: "UNAUTHORIZED", message: auth.message }, { status: auth.status });
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("query") ?? undefined;
   const status = searchParams.get("status") as any;
@@ -78,4 +83,3 @@ async function uniqueCode() {
   // fallback to a longer code
   return generateShortCode() + generateShortCode();
 }
-
