@@ -2,6 +2,7 @@ import { prisma } from "@/server/db";
 import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
+import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export default async function DebtShow({ params }: { params: { id: string } }) {
   const session = await getAuthSession();
@@ -32,22 +33,22 @@ export default async function DebtShow({ params }: { params: { id: string } }) {
       <section>
         <h2 className="font-semibold mb-2">سجل الدفعات</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-left border-b">
-                <th className="p-2">التاريخ</th>
-                <th className="p-2">المبلغ</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <THead>
+              <TR>
+                <TH>التاريخ</TH>
+                <TH>المبلغ</TH>
+              </TR>
+            </THead>
+            <TBody>
               {d.payments.map(p => (
-                <tr key={p.id} className="border-b">
-                  <td className="p-2">{new Date(p.at).toLocaleString()}</td>
-                  <td className="p-2">{String(p.amount)}</td>
-                </tr>
+                <TR key={p.id}>
+                  <TD>{new Date(p.at).toLocaleString()}</TD>
+                  <TD>{String(p.amount)}</TD>
+                </TR>
               ))}
-            </tbody>
-          </table>
+            </TBody>
+          </Table>
         </div>
       </section>
     </div>
@@ -62,4 +63,3 @@ function Info({ label, value }: { label: string; value: React.ReactNode }) {
     </div>
   );
 }
-

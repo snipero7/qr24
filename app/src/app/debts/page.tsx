@@ -2,6 +2,7 @@ import { prisma } from "@/server/db";
 import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
+import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export default async function DebtsPage() {
   const session = await getAuthSession();
@@ -15,36 +16,36 @@ export default async function DebtsPage() {
         <a className="border px-3 py-2 rounded" href="/api/debts/export">تصدير CSV</a>
       </div>
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="p-2">المحل</th>
-              <th className="p-2">الخدمة</th>
-              <th className="p-2">الإجمالي</th>
-              <th className="p-2">المدفوع</th>
-              <th className="p-2">المتبقي</th>
-              <th className="p-2">الحالة</th>
-              <th className="p-2">إجراء</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <THead>
+            <TR>
+              <TH>المحل</TH>
+              <TH>الخدمة</TH>
+              <TH>الإجمالي</TH>
+              <TH>المدفوع</TH>
+              <TH>المتبقي</TH>
+              <TH>الحالة</TH>
+              <TH>إجراء</TH>
+            </TR>
+          </THead>
+          <TBody>
             {items.map(d => {
               const paid = d.payments.reduce((s,p)=>s+Number(p.amount),0);
               const remaining = Math.max(0, Number(d.amount)-paid);
               return (
-                <tr key={d.id} className="border-b">
-                  <td className="p-2"><a className="text-blue-600" href={`/debts/${d.id}`}>{d.shopName}</a></td>
-                  <td className="p-2">{d.service}</td>
-                  <td className="p-2">{String(d.amount)}</td>
-                  <td className="p-2">{paid}</td>
-                  <td className="p-2">{remaining}</td>
-                  <td className="p-2">{d.status}</td>
-                  <td className="p-2"><AddPaymentDialog debtId={d.id} /></td>
-                </tr>
+                <TR key={d.id}>
+                  <TD><a className="text-blue-600" href={`/debts/${d.id}`}>{d.shopName}</a></TD>
+                  <TD>{d.service}</TD>
+                  <TD>{String(d.amount)}</TD>
+                  <TD>{paid}</TD>
+                  <TD>{remaining}</TD>
+                  <TD>{d.status}</TD>
+                  <TD><AddPaymentDialog debtId={d.id} /></TD>
+                </TR>
               );
             })}
-          </tbody>
-        </table>
+          </TBody>
+        </Table>
       </div>
     </div>
   );

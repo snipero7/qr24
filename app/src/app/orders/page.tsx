@@ -3,6 +3,7 @@ import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 import { DeliverDialog } from "@/components/DeliverDialog";
 import { QuickStatus } from "@/components/orders/QuickStatus";
+import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","DELIVERED","CANCELED"] as const;
 
@@ -56,37 +57,32 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
       </form>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="p-2">الكود</th>
-              <th className="p-2">العميل</th>
-              <th className="p-2">الجوال</th>
-              <th className="p-2">الخدمة</th>
-              <th className="p-2">الحالة</th>
-              <th className="p-2">سريع</th>
-              <th className="p-2">إجراء</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <THead>
+            <TR>
+              <TH>الكود</TH>
+              <TH>العميل</TH>
+              <TH>الجوال</TH>
+              <TH>الخدمة</TH>
+              <TH>الحالة</TH>
+              <TH>سريع</TH>
+              <TH>إجراء</TH>
+            </TR>
+          </THead>
+          <TBody>
             {items.map((o) => (
-              <tr key={o.id} className="border-b">
-                <td className="p-2 font-mono"><a className="text-blue-600" href={`/track/${o.code}`}>{o.code}</a></td>
-                <td className="p-2">{o.customer.name}</td>
-                <td className="p-2">{o.customer.phone}</td>
-                <td className="p-2">{o.service}</td>
-                <td className="p-2">{o.status}</td>
-                <td className="p-2">
-                  <QuickStatus orderId={o.id} current={o.status} />
-                </td>
-                <td className="p-2"><a className="text-blue-600" href={`/orders/${o.id}`}>تفاصيل</a></td>
-                {o.status !== "DELIVERED" && (
-                  <td className="p-2"><DeliverDialog orderId={o.id} /></td>
-                )}
-              </tr>
+              <TR key={o.id}>
+                <TD className="font-mono"><a className="text-blue-600" href={`/track/${o.code}`}>{o.code}</a></TD>
+                <TD>{o.customer.name}</TD>
+                <TD>{o.customer.phone}</TD>
+                <TD>{o.service}</TD>
+                <TD>{o.status}</TD>
+                <TD><QuickStatus orderId={o.id} current={o.status} /></TD>
+                <TD><a className="text-blue-600" href={`/orders/${o.id}`}>تفاصيل</a>{o.status !== "DELIVERED" && (<> · <DeliverDialog orderId={o.id} /></>)}</TD>
+              </TR>
             ))}
-          </tbody>
-        </table>
+          </TBody>
+        </Table>
       </div>
     </div>
   );
