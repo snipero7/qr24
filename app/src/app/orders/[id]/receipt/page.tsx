@@ -9,7 +9,7 @@ export default async function ReceiptPrintPage({ params }: { params: { id: strin
 
   return (
     <div className="max-w-3xl mx-auto p-8 print:p-0">
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-6 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold">إيصال تسليم</h1>
           <div className="text-sm text-gray-600">كود الطلب: <span className="font-mono">{o.code}</span></div>
@@ -24,6 +24,16 @@ export default async function ReceiptPrintPage({ params }: { params: { id: strin
         <Info label="السعر التقديري" value={String(o.originalPrice)} />
         {o.collectedPrice && <Info label="المبلغ المُحصّل" value={String(o.collectedPrice)} />}
         {o.collectedAt && <Info label="تاريخ التسليم" value={new Date(o.collectedAt).toLocaleString()} />}
+      </div>
+      <div className="grid grid-cols-2 gap-6 mt-10">
+        <div>
+          <div className="text-sm text-gray-600 mb-2">توقيع العميل</div>
+          <div className="h-16 border rounded" />
+        </div>
+        <div>
+          <div className="text-sm text-gray-600 mb-2">ختم المتجر</div>
+          <div className="h-16 border rounded" />
+        </div>
       </div>
       <p className="text-xs text-gray-500">هذا الإيصال يحتوي رمز QR لتتبع الطلب دون كشف بيانات حساسة.</p>
       <div className="mt-6 no-print">

@@ -2,26 +2,32 @@ import { prisma } from "@/server/db";
 import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
-import { StatCard } from "@/components/ui/card";
+import { KpiCard } from "@/components/ui/kpi-card";
+import { ActionBar } from "@/components/ui/action-bar";
 
-export default async function ReportsPage() {
+export default async function ReportsPage({ searchParams }: { searchParams: { from?: string; to?: string } }) {
   const session = await getAuthSession();
   if (!session || (session.user as any).role === "TECH") redirect("/signin");
 
-  const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0,0,0,0);
-  const [collectedMonthAgg] = await Promise.all([
-    prisma.order.aggregate({ _sum: { collectedPrice: true }, where: { collectedAt: { gte: startOfMonth } } }),
-  ]);
-  const collectedMonth = Number(collectedMonthAgg._sum.collectedPrice || 0);
+  // نطاق التاريخ
+  const toParam = searchParams.to ? new Date(searchParams.to) : new Date();
+  const fromParam = searchParams.from ? new Date(searchParams.from) : new Date(Date.now() - 29*24*3600*1000);
+  const toDate = new Date(toParam); toDate.setHours(23,59,59,999);
+  const fromDate = new Date(fromParam); fromDate.setHours(0,0,0,0);
 
-  // آخر 30 يوم محصّل يوميًا
+  const collectedAgg = await prisma.order.aggregate({ _sum: { collectedPrice: true }, _count: { _all: true }, where: { collectedAt: { gte: fromDate, lte: toDate } } });
+  const collectedTotal = Number(collectedAgg._sum.collectedPrice || 0);
+  const deliveredCount = await prisma.order.count({ where: { collectedAt: { gte: fromDate, lte: toDate } } });
+
+  // تجميع يومي ضمن النطاق
   const rows = await prisma.$queryRaw<{ day: Date; count: number; sum: number }[]>`
     SELECT DATE_TRUNC('day', "collectedAt") AS day,
            COUNT(*) AS count,
            COALESCE(SUM("collectedPrice"), 0) AS sum
     FROM "Order"
     WHERE "collectedAt" IS NOT NULL
-      AND "collectedAt" >= NOW() - interval '30 days'
+      AND "collectedAt" >= ${fromDate}
+      AND "collectedAt" <= ${toDate}
     GROUP BY day
     ORDER BY day DESC
   `;
@@ -29,10 +35,28 @@ export default async function ReportsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">التقارير</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="محصّل هذا الشهر" value={`${collectedMonth.toFixed(2)} ر.س`} />
-        <StatCard label="أيام محسوبة" value={rows.length} />
-        <StatCard label="متوسط يومي" value={`${(rows.reduce((a,r)=>a+Number(r.sum),0)/(rows.length||1)).toFixed(2)} ر.س`} />
+      <ActionBar>
+        <form className="contents">
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">من</label>
+            <input type="date" name="from" defaultValue={fromDate.toISOString().slice(0,10)} className="border rounded p-2 w-full" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">إلى</label>
+            <input type="date" name="to" defaultValue={new Date(toParam).toISOString().slice(0,10)} className="border rounded p-2 w-full" />
+          </div>
+          <div className="flex items-end">
+            <button className="btn-primary">تطبيق</button>
+          </div>
+          <div className="flex items-end">
+            <a className="border rounded px-3 py-2" href={`/api/reports/orders-by-day.csv?from=${fromDate.toISOString().slice(0,10)}&to=${toDate.toISOString().slice(0,10)}`}>تصدير CSV</a>
+          </div>
+        </form>
+      </ActionBar>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <KpiCard title="المحصّل الكلي" value={`${collectedTotal.toFixed(2)} ر.س`} />
+        <KpiCard title="عدد التسليمات" value={deliveredCount} />
+        <KpiCard title="متوسط يومي" value={`${(rows.reduce((a,r)=>a+Number(r.sum),0)/(rows.length||1)).toFixed(2)} ر.س`} />
       </div>
 
       <section>
@@ -57,11 +81,7 @@ export default async function ReportsPage() {
             </TBody>
           </Table>
         </div>
-        <div className="mt-2">
-          <a className="border rounded px-3 py-1" href="/api/reports/orders-by-day.csv">تصدير CSV</a>
-        </div>
       </section>
     </div>
   );
 }
-
