@@ -67,16 +67,31 @@ Endpoints مهمة:
 ## تصميم RTL + Theme
 
 - اتجاه RTL مفعّل على الجذر (`html lang="ar" dir="rtl"`).
-- متغيرات ألوان قابلة للتعديل في `app/src/app/globals.css`:
-  - `--color-primary`, `--color-primary-700`, `--color-accent`, `--surface`, `--text`, `--muted`.
+- متغيرات ألوان قابلة للتعديل في `app/src/app/globals.css` (تصميم موحّد لكل المزايا الجديدة):
+  - الأساسيات: `--background`, `--surface`, `--foreground`, `--muted`, `--border`.
+  - الهوية: `--color-primary`, `--color-primary-700`, `--color-accent`.
+  - الدلالية: `--color-success`, `--color-warning`, `--color-danger`, `--color-info`.
 - الوضع الداكن عبر `ThemeToggle` يبدّل `data-theme` و/أو `class=dark` على `<html>`.
-- مكونات قابلة لإعادة الاستخدام:
+- مكونات قابلة لإعادة الاستخدام (التزم بها عند بناء مزايا جديدة):
   - `KpiCard`: `app/src/components/ui/kpi-card.tsx`
   - `StatusBadge`: `app/src/components/ui/status-badge.tsx`
   - `DataTable`: `app/src/components/ui/data-table.tsx`
   - `ActionBar`: `app/src/components/ui/action-bar.tsx`
   - `FormGrid`: `app/src/components/ui/form-grid.tsx`
-- صفحات محدّثة: Dashboard/Orders/Debts/Track تستخدم الشارات والجداول والبطاقات الجديدة.
+  - `Card` + أصناف البطاقات المعيارية: `app/src/components/ui/card.tsx`
+    - استعمل `className="card"` كأساس.
+    - لتفاعل عند التحويم: `card interactive`.
+    - لتلوين خفيف احترافي: `card tonal`.
+    - للدلالة اللونية: `card tonal--success` / `tonal--warning` / `tonal--danger` / `tonal--info`.
+    - تقسيم المحتوى:
+      - الترويسة: `card-header` مع `card-title` و`card-subtitle`.
+      - الأقسام: `card-section`.
+      - الفوتر: `card-footer`.
+  - الجداول: `Table`, `THead`, `TBody`, `TR`, `TH`, `TD` (`app/src/components/ui/table.tsx`)
+    - `THead` يستخدم لون النص من `--foreground` وخلفية خفيفة مع تباين جيّد.
+    - الصفوف تتفاعل بالتحويم وتفصل بحد سفلي خفيف.
+- صفحات محدّثة كمثال للأسلوب المعتمد: Dashboard/Orders/Debts/Reports/Users/Track/Signin/Order Show/New Order.
+  - أي صفحات جديدة يُفضّل أن تحاكي هذا النمط مباشرة.
 - الأدوات: `src/lib/whatsapp.ts`
   - `toE164KSA`: يحوّل الأرقام السعودية إلى E.164 تلقائيًا (`05xxxxxxxx` أو `5xxxxxxxx` ⇒ `9665xxxxxxxx`).
   - `renderTemplate`: يحقن المتغيرات ويرمّز النص بـ `encodeURIComponent`.
@@ -84,6 +99,7 @@ Endpoints مهمة:
 - القوالب: `src/config/notifications.ts`
   - `order.ready`, `order.delivered`, `debt.reminder`
   - يمكن تعديل نصوصها أو متغيرات `NEXT_PUBLIC_STORE_NAME` و`NEXT_PUBLIC_STORE_ADDRESS`.
+  - يدعم التوصيل سطور الإضافات: `extraCharge` و`extraReason` في تمبلت `order.delivered`.
 - الاستخدام في الواجهة:
   - الطلبات: زر “واتساب” يظهر في الجدول. عند READY يستخدم تمبليت الجاهزية، وعند DELIVERED يستخدم تمبليت التسليم مع `collectedPrice` و`receiptUrl`.
   - الديون: زر “واتساب” يرسل تمبليت التذكير مع `{remaining}` (معطل إذا لا يوجد رقم صالح).
@@ -106,6 +122,7 @@ Endpoints مهمة:
     - `S3_ENDPOINT` (لـ R2/MinIO) اختياري
     - `S3_PUBLIC_BASE` (اختياري لروابط التحميل العامة). إن لم تُحدد، يحاول النظام استخدام نمط `https://<bucket>.s3.amazonaws.com/<key>`.
   - عند التسليم، يُرفَع PDF إلى `receipts/<code>.pdf` ويُحفظ الرابط في `receiptUrl`.
+  - يتضمن الإيصال تفاصيل: السعر الأساسي، الرسوم الإضافية (إن وجدت) مع السبب، الإجمالي قبل الخصم، الخصم، والمبلغ المحصّل.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

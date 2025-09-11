@@ -2,6 +2,9 @@ import { prisma } from "@/server/db";
 import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 import bcrypt from "bcrypt";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export default async function UsersPage() {
   const session = await getAuthSession();
@@ -13,54 +16,60 @@ export default async function UsersPage() {
     <div className="space-y-6">
       <h1 className="text-xl font-bold">المستخدمون</h1>
 
-      <section className="border rounded p-4 bg-white">
-        <h2 className="font-semibold mb-3">إنشاء مستخدم</h2>
+      <section className="card tonal">
+        <div className="card-header">
+          <h2 className="card-title">إنشاء مستخدم</h2>
+        </div>
+        <div className="card-section">
         <form action={createUser} className="grid grid-cols-1 sm:grid-cols-5 gap-2">
-          <input name="name" required placeholder="الاسم" className="border rounded p-2" />
-          <input name="email" required type="email" placeholder="البريد" className="border rounded p-2" />
-          <input name="password" required type="password" placeholder="كلمة المرور" className="border rounded p-2" />
-          <select name="role" defaultValue="CLERK" className="border rounded p-2">
+          <Input name="name" required placeholder="الاسم" />
+          <Input name="email" required type="email" placeholder="البريد" />
+          <Input name="password" required type="password" placeholder="كلمة المرور" />
+          <Select name="role" defaultValue="CLERK">
             <option value="ADMIN">ADMIN</option>
             <option value="TECH">TECH</option>
             <option value="CLERK">CLERK</option>
-          </select>
-          <button className="btn-primary">إنشاء</button>
+          </Select>
+          <button className="btn-primary h-14 sm:h-12 px-6">إنشاء</button>
         </form>
+        </div>
       </section>
 
-      <section>
-        <h2 className="font-semibold mb-3">قائمة المستخدمين</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-left border-b">
-                <th className="p-2">الاسم</th>
-                <th className="p-2">البريد</th>
-                <th className="p-2">الدور</th>
-                <th className="p-2">تحديث الدور</th>
-              </tr>
-            </thead>
-            <tbody>
+      <section className="card tonal p-0">
+        <div className="card-header">
+          <h2 className="card-title">قائمة المستخدمين</h2>
+        </div>
+        <div className="card-section overflow-x-auto">
+          <Table className="glass-table">
+            <THead>
+              <TR>
+                <TH>الاسم</TH>
+                <TH>البريد</TH>
+                <TH>الدور</TH>
+                <TH>تحديث الدور</TH>
+              </TR>
+            </THead>
+            <TBody>
               {users.map(u => (
-                <tr key={u.id} className="border-b">
-                  <td className="p-2">{u.name}</td>
-                  <td className="p-2">{u.email}</td>
-                  <td className="p-2">{u.role}</td>
-                  <td className="p-2">
-                    <form action={updateRole} className="flex items-center gap-2">
+                <TR key={u.id} className="glass-row rounded-xl">
+                  <TD>{u.name}</TD>
+                  <TD>{u.email}</TD>
+                  <TD>{u.role}</TD>
+                  <TD>
+                    <form action={updateRole} className="flex items-center gap-2 justify-end">
                       <input type="hidden" name="id" value={u.id} />
-                      <select name="role" defaultValue={u.role} className="border rounded p-1">
+                      <select name="role" defaultValue={u.role} className="input h-8 py-0">
                         <option value="ADMIN">ADMIN</option>
                         <option value="TECH">TECH</option>
                         <option value="CLERK">CLERK</option>
                       </select>
-                      <button className="border px-2 rounded">حفظ</button>
+                      <button className="btn-outline h-8 px-3">حفظ</button>
                     </form>
-                  </td>
-                </tr>
+                  </TD>
+                </TR>
               ))}
-            </tbody>
-          </table>
+            </TBody>
+          </Table>
         </div>
       </section>
     </div>

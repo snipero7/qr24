@@ -1,41 +1,48 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
 
-type Theme = "light" | "dark" | "system";
+type Theme = "light" | "dark";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system");
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    const saved = (localStorage.getItem("theme") as Theme) || "system";
-    setTheme(saved);
-    applyTheme(saved);
+    const saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") {
+      setTheme(saved);
+      applyTheme(saved);
+    } else {
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const initial: Theme = prefersDark ? "dark" : "light";
+      setTheme(initial);
+      applyTheme(initial);
+    }
   }, []);
 
   function applyTheme(t: Theme) {
     const html = document.documentElement;
-    html.removeAttribute("data-theme");
-    html.classList.remove('dark','light');
-    if (t === "dark") { html.setAttribute("data-theme", "dark"); html.classList.add('dark'); }
-    else if (t === "light") { html.setAttribute("data-theme", "light"); html.classList.add('light'); }
-    // system => no attribute/class, falls back to prefers-color-scheme
+    html.setAttribute("data-theme", t);
+    html.classList.remove("dark", "light");
+    html.classList.add(t);
   }
 
-  function change(t: Theme) {
-    setTheme(t);
-    localStorage.setItem("theme", t);
-    applyTheme(t);
+  function toggle() {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("theme", next);
+    applyTheme(next);
   }
 
   return (
-    <div className="ms-auto flex items-center gap-1 text-sm">
-      <button className={btn(theme==='light')} onClick={()=>change('light')}>فاتح</button>
-      <button className={btn(theme==='dark')} onClick={()=>change('dark')}>داكن</button>
-      <button className={btn(theme==='system')} onClick={()=>change('system')}>نظام</button>
-    </div>
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={theme === "dark" ? "تبديل إلى الوضع الفاتح" : "تبديل إلى الوضع الداكن"}
+      title={theme === "dark" ? "وضع فاتح" : "وضع داكن"}
+      className="icon-ghost"
+    >
+      {theme === "dark" ? <Sun size={24} /> : <Moon size={24} />}
+    </button>
   );
-}
-
-function btn(active: boolean) {
-  return `border rounded px-2 py-1 ${active? 'bg-gray-900 text-white border-gray-900 dark:bg-gray-100 dark:text-black' : 'bg-white hover:bg-gray-50'}`;
 }

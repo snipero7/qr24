@@ -12,10 +12,12 @@ export async function GET(req: Request) {
   const toDate = new Date(toParam); toDate.setHours(23,59,59,999);
   const fromDate = new Date(fromParam); fromDate.setHours(0,0,0,0);
 
-  const rows = await prisma.$queryRaw<{ day: Date; count: number; sum: number }[]>`
+  const rows = await prisma.$queryRaw<{ day: Date; count: number; sum: number; extra_sum: number; discount_sum: number }[]>`
     SELECT DATE_TRUNC('day', "collectedAt") AS day,
            COUNT(*) AS count,
-           COALESCE(SUM("collectedPrice"), 0) AS sum
+           COALESCE(SUM("collectedPrice"), 0) AS sum,
+           COALESCE(SUM(COALESCE("extraCharge", 0)), 0) AS extra_sum,
+           COALESCE(SUM(GREATEST(0, (COALESCE("originalPrice",0) + COALESCE("extraCharge",0) - COALESCE("collectedPrice",0)))), 0) AS discount_sum
     FROM "Order"
     WHERE "collectedAt" IS NOT NULL
       AND "collectedAt" >= ${fromDate}
@@ -23,7 +25,7 @@ export async function GET(req: Request) {
     GROUP BY day
     ORDER BY day DESC
   `;
-  const data = rows.map(r => ({ day: r.day.toISOString().slice(0,10), count: Number(r.count), sum: Number(r.sum) }));
-  const csv = toCsv(data, ["day","count","sum"]);
+  const data = rows.map(r => ({ day: r.day.toISOString().slice(0,10), count: Number(r.count), sum: Number(r.sum), extra_sum: Number(r.extra_sum), discount_sum: Number(r.discount_sum) }));
+  const csv = toCsv(data, ["day","count","sum","extra_sum","discount_sum"]);
   return new Response(csv, { headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": "attachment; filename=orders-by-day.csv" } });
 }

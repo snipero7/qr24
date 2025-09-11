@@ -1,25 +1,30 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export function Card({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("rounded-lg border bg-white p-4", className)}>{children}</div>;
+type Padding = "sm" | "md" | "lg";
+
+export function Card({ className, children, interactive = false, padding = "md" }: { className?: string; children: React.ReactNode; interactive?: boolean; padding?: Padding }) {
+  const pad = padding === "sm" ? "p-4" : padding === "lg" ? "p-8" : "p-6";
+  return <div className={cn("card", pad, interactive && "interactive", className)}>{children}</div>;
 }
 
-export function CardHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+export function CardHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
   return (
-    <div className="mb-2">
-      <div className="text-sm text-gray-500">{subtitle}</div>
-      <h3 className="text-lg font-semibold">{title}</h3>
+    <div className="card-header">
+      <div>
+        {subtitle && <div className="card-subtitle">{subtitle}</div>}
+        <h3 className="card-title">{title}</h3>
+      </div>
+      {actions}
     </div>
   );
 }
 
 export function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <Card>
-      <div className="text-gray-500 text-sm">{label}</div>
+    <Card interactive padding="md">
+      <div className="text-[var(--muted)] text-sm">{label}</div>
       <div className="text-2xl font-semibold mt-1">{value}</div>
     </Card>
   );
 }
-

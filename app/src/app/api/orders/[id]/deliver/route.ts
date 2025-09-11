@@ -5,6 +5,7 @@ import { generateReceiptPdf } from "@/server/receipt";
 import path from "node:path";
 import { requireAuth } from "@/server/auth";
 import { saveReceipt } from "@/server/storage";
+import { logger } from "@/server/logger";
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -13,7 +14,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const body = await req.json();
     const parsed = deliverOrderSchema.safeParse(body);
     if (!parsed.success) return errorResponse("INVALID_INPUT", "بيانات غير صالحة", parsed.error.flatten());
-    const { collectedPrice } = parsed.data;
+    const { collectedPrice, extraCharge = 0, extraReason } = parsed.data as any;
 
     const order = await prisma.order.findUnique({ where: { id: params.id }, include: { customer: true } });
     if (!order) return errorResponse("NOT_FOUND", "الطلب غير موجود");
@@ -30,27 +31,36 @@ export async function POST(req: Request, { params }: { params: { id: string } })
           status: "DELIVERED",
           collectedPrice: collectedPrice,
           collectedAt: now,
+          extraCharge: extraCharge || 0,
+          extraReason: (extraCharge || 0) > 0 ? (extraReason || '') : null,
         },
       });
       await tx.orderStatusLog.create({ data: { orderId: params.id, from: order.status, to: "DELIVERED", note: "Delivered" } });
       return u;
     });
 
-    // Generate PDF receipt and save locally as mock storage
-    const { dataUrl } = await makeQrPayload(order.code);
-    const pdfBuf = await generateReceiptPdf({
-      code: order.code,
-      service: order.service,
-      deviceModel: order.deviceModel,
-      collectedPrice: Number(parsed.data.collectedPrice),
-      collectedAt: delivered.collectedAt!,
-      customer: { name: order.customer.name, phone: order.customer.phone },
-    }, dataUrl);
-    const fileName = `${order.code}.pdf`;
-    const key = path.posix.join("receipts", fileName);
-    const receiptUrl = await saveReceipt(pdfBuf, key, "application/pdf");
-
-    await prisma.order.update({ where: { id: delivered.id }, data: { receiptUrl } });
+    // Generate PDF receipt and save — but do not fail delivery if receipt fails
+    let receiptUrl: string | null = null;
+    try {
+      const { dataUrl } = await makeQrPayload(order.code);
+      const pdfBuf = await generateReceiptPdf({
+        code: order.code,
+        service: order.service,
+        deviceModel: order.deviceModel,
+        collectedPrice: Number(parsed.data.collectedPrice),
+        collectedAt: delivered.collectedAt!,
+        originalPrice: Number(order.originalPrice),
+        extraCharge: Number(delivered.extraCharge || 0),
+        extraReason: delivered.extraReason || undefined,
+        customer: { name: order.customer.name, phone: order.customer.phone },
+      }, dataUrl);
+      const fileName = `${order.code}.pdf`;
+      const key = path.posix.join("receipts", fileName);
+      receiptUrl = await saveReceipt(pdfBuf, key, "application/pdf");
+      await prisma.order.update({ where: { id: delivered.id }, data: { receiptUrl } });
+    } catch (err: any) {
+      logger.warn({ err: String(err?.message || err) }, "receipt_generation_failed");
+    }
 
     return Response.json({ status: "DELIVERED", collectedAt: delivered.collectedAt, collectedPrice: delivered.collectedPrice, receiptUrl });
   } catch (e: any) {

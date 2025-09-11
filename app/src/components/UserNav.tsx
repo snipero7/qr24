@@ -8,13 +8,12 @@ export function UserNav() {
     <div className="ms-auto flex items-center gap-3 text-sm">
       {user ? (
         <>
-          <span className="text-gray-600">{user?.email} ({user?.role})</span>
-          <button onClick={()=>signOut({ callbackUrl: "/signin" })} className="px-3 py-1 rounded border">خروج</button>
+          <span className="text-gray-600">({user?.role})</span>
+          <button onClick={()=>signOut({ callbackUrl: "/signin" })} className="btn-outline h-9">خروج</button>
         </>
       ) : (
-        <a href="/signin" className="px-3 py-1 rounded border">دخول</a>
+        <a href="/signin" className="btn-outline h-9">دخول</a>
       )}
     </div>
   );
 }
-

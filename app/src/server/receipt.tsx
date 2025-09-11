@@ -3,6 +3,7 @@ import { Document, Page, Text, View, StyleSheet, Image, renderToBuffer, Font } f
 import fs from "node:fs";
 import path from "node:path";
 import { storeConfig } from "@/config/notifications";
+import { formatYMD_HM } from "@/lib/date";
 
 type OrderInfo = {
   code: string;
@@ -10,32 +11,66 @@ type OrderInfo = {
   deviceModel?: string | null;
   collectedPrice: number;
   collectedAt: Date;
+  originalPrice?: number | null;
+  extraCharge?: number | null;
+  extraReason?: string | null;
   customer: { name: string; phone: string };
 };
 
-let fontRegistered = false;
-function ensureArabicFont() {
-  if (fontRegistered) return;
-  // حاول استخدام خطوط محلية إن وُجدت، وإلا استخدم النظام الافتراضي
+let fontChecked = false;
+let chosenFont: string | null = null;
+function ensureArabicFont(): string | null {
+  if (fontChecked) return chosenFont;
   try {
     const fontsDir = path.join(process.cwd(), "public", "fonts");
-    const regular = path.join(fontsDir, "Cairo-Regular.ttf");
-    const bold = path.join(fontsDir, "Cairo-Bold.ttf");
-    if (fs.existsSync(regular)) {
+    // Try Cairo
+    const cairoRegular = path.join(fontsDir, "Cairo-Regular.ttf");
+    const cairoBold = path.join(fontsDir, "Cairo-Bold.ttf");
+    if (fs.existsSync(cairoRegular)) {
       Font.register({
         family: "Cairo",
         fonts: [
-          { src: regular, fontWeight: "normal" },
-          fs.existsSync(bold) ? { src: bold, fontWeight: "bold" } : undefined,
+          { src: cairoRegular, fontWeight: "normal" },
+          fs.existsSync(cairoBold) ? { src: cairoBold, fontWeight: "bold" } : undefined,
         ].filter(Boolean) as any,
       });
+      chosenFont = "Cairo";
+    } else {
+      // Try Noto Naskh Arabic
+      const notoRegular = path.join(fontsDir, "NotoNaskhArabic-Regular.ttf");
+      const notoBold = path.join(fontsDir, "NotoNaskhArabic-Bold.ttf");
+      if (fs.existsSync(notoRegular)) {
+        Font.register({
+          family: "NotoNaskhArabic",
+          fonts: [
+            { src: notoRegular, fontWeight: "normal" },
+            fs.existsSync(notoBold) ? { src: notoBold, fontWeight: "bold" } : undefined,
+          ].filter(Boolean) as any,
+        });
+        chosenFont = "NotoNaskhArabic";
+      } else {
+        // Try Amiri
+        const amiriRegular = path.join(fontsDir, "Amiri-Regular.ttf");
+        const amiriBold = path.join(fontsDir, "Amiri-Bold.ttf");
+        if (fs.existsSync(amiriRegular)) {
+          Font.register({
+            family: "Amiri",
+            fonts: [
+              { src: amiriRegular, fontWeight: "normal" },
+              fs.existsSync(amiriBold) ? { src: amiriBold, fontWeight: "bold" } : undefined,
+            ].filter(Boolean) as any,
+          });
+          chosenFont = "Amiri";
+        }
+      }
     }
   } catch {}
-  fontRegistered = true;
+  fontChecked = true;
+  return chosenFont;
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 24, fontSize: 12, direction: "rtl" as any, fontFamily: "Cairo" },
+  page: { padding: 24, fontSize: 12, direction: "rtl" as any },
   header: { fontSize: 18, marginBottom: 12, textAlign: "right" },
   subheader: { fontSize: 10, color: "#666", marginTop: -8, marginBottom: 12, textAlign: "right" },
   row: { flexDirection: "row-reverse", justifyContent: "space-between", marginBottom: 4 },
@@ -52,20 +87,10 @@ function formatSAR(n: number) {
   }
 }
 
-function formatDate(d: Date) {
-  try {
-    return new Intl.DateTimeFormat("ar-SA", {
-      dateStyle: "medium",
-      timeStyle: "short",
-      hour12: true,
-    }).format(d);
-  } catch {
-    return d.toISOString();
-  }
-}
+function formatDate(d: Date) { return formatYMD_HM(d); }
 
 export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
-  ensureArabicFont();
+  const font = ensureArabicFont();
   const hasLogo = !!process.env.NEXT_PUBLIC_STORE_LOGO;
   const logoPath = process.env.NEXT_PUBLIC_STORE_LOGO
     ? path.isAbsolute(process.env.NEXT_PUBLIC_STORE_LOGO)
@@ -75,7 +100,7 @@ export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
 
   const doc = (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={{ ...styles.page, ...(font ? { fontFamily: font } : {}) }}>
         <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <Text style={styles.header}>إيصال تسليم</Text>
           {hasLogo && logoPath ? <Image style={{ width: 96, height: 36 }} src={logoPath} /> : null}
@@ -100,8 +125,36 @@ export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
               <Text>{order.deviceModel}</Text>
             </View>
           )}
+          {(() => {
+            const base = typeof order.originalPrice === 'number' ? (order.originalPrice || 0) : 0;
+            const extra = typeof order.extraCharge === 'number' ? (order.extraCharge || 0) : 0;
+            const effective = base + extra;
+            const discount = Math.max(0, effective - order.collectedPrice);
+            return (
+              <>
+                <View style={styles.row}>
+                  <Text style={styles.label}>السعر الأساسي:</Text>
+                  <Text>{formatSAR(base)}</Text>
+                </View>
+                {extra > 0 ? (
+                  <View style={styles.row}>
+                    <Text style={styles.label}>رسوم إضافية{order.extraReason ? ` (${order.extraReason})` : ''}:</Text>
+                    <Text>{formatSAR(extra)}</Text>
+                  </View>
+                ) : null}
+                <View style={styles.row}>
+                  <Text style={styles.label}>الإجمالي قبل الخصم:</Text>
+                  <Text>{formatSAR(effective)}</Text>
+                </View>
+                <View style={styles.row}>
+                  <Text style={styles.label}>الخصم:</Text>
+                  <Text>{formatSAR(discount)}</Text>
+                </View>
+              </>
+            );
+          })()}
           <View style={styles.row}>
-            <Text style={styles.label}>المبلغ المُحصَّل:</Text>
+            <Text style={styles.label}>المبلغ بعد الخصم:</Text>
             <Text>{formatSAR(order.collectedPrice)}</Text>
           </View>
           <View style={styles.row}>

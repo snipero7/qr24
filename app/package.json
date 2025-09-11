@@ -4,8 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:local": "HOSTNAME=127.0.0.1 PORT=3001 next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
+    "start:local": "HOSTNAME=127.0.0.1 PORT=3001 next start",
+    "test:unit": "vitest --run",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
     "lint": "eslint",
     "prisma": "prisma",
     "db:push": "prisma db push",

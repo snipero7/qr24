@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogHeader } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { AmountPad } from "@/components/ui/amount-pad";
 import { Button } from "@/components/ui/button";
+import { Wallet } from "lucide-react";
 
-export function AddPaymentDialog({ debtId }: { debtId: string }) {
+export function AddPaymentDialog({ debtId, variant = "text" }: { debtId: string; variant?: "text" | "icon" }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -29,14 +30,25 @@ export function AddPaymentDialog({ debtId }: { debtId: string }) {
 
   return (
     <div>
-      <Button size="sm" onClick={()=>setOpen(true)}>إضافة دفعة</Button>
+      {variant === "icon" ? (
+        <button
+          type="button"
+          onClick={()=>setOpen(true)}
+          title="سداد"
+          className="icon-ghost"
+        >
+          <Wallet className="w-5 h-5 text-[var(--color-primary)] dark:text-[var(--color-primary)]" />
+        </button>
+      ) : (
+        <Button size="sm" onClick={()=>setOpen(true)}>سداد</Button>
+      )}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogHeader title="دفعة جديدة" />
+        <DialogHeader title="سداد" />
         {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
-        <Input type="number" value={amount} onChange={(e)=>setAmount(Number(e.target.value))} placeholder="المبلغ" />
+        <AmountPad name="amount" label="المبلغ" onChangeValue={(n)=>setAmount(n)} />
         <div className="flex gap-2 justify-end mt-3">
-          <Button variant="outline" size="sm" onClick={()=>setOpen(false)}>إلغاء</Button>
-          <Button disabled={loading} size="sm" onClick={submit}>{loading?"جارٍ...":"تأكيد"}</Button>
+          <Button variant="outline" size="md" className="h-12 px-5" onClick={()=>setOpen(false)}>إلغاء</Button>
+          <Button disabled={loading} size="lg" className="h-14 sm:h-12 px-6" onClick={submit}>{loading?"جارٍ...":"تأكيد"}</Button>
         </div>
       </Dialog>
     </div>

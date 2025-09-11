@@ -48,6 +48,9 @@ model Order {
   imei           String?
   service        String
   originalPrice  Decimal      @default(0)
+  // Optional extra charge collected at delivery time (e.g., extra part)
+  extraCharge    Decimal?     @default(0)
+  extraReason    String?
   collectedPrice Decimal?
   status         OrderStatus  @default(NEW)
   collectedAt    DateTime?

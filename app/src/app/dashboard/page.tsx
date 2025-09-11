@@ -5,6 +5,7 @@ import { KpiCard } from "@/components/ui/kpi-card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ClipboardList, Wallet, PiggyBank, Users, Receipt, QrCode } from "lucide-react";
+import { formatYMD_HM } from "@/lib/date";
 
 export default async function Dashboard() {
   const session = await getAuthSession();
@@ -44,10 +45,12 @@ export default async function Dashboard() {
         <KpiCard title="الديون المتبقية" value={`${totalDebtRemaining.toFixed(2)} ر.س`} icon={<PiggyBank size={18} />} />
       </div>
 
-      <section>
-        <h2 className="font-semibold mb-3">أحدث الطلبات</h2>
-        <div className="overflow-x-auto">
-          <Table>
+      <section className="card tonal p-0">
+        <div className="card-header">
+          <h2 className="card-title">أحدث الطلبات</h2>
+        </div>
+        <div className="card-section overflow-x-auto">
+          <Table className="glass-table">
             <THead>
               <TR>
                 <TH>الكود</TH>
@@ -59,14 +62,14 @@ export default async function Dashboard() {
             </THead>
             <TBody>
               {recent.map((o) => (
-                <TR key={o.id} className="hover:bg-gray-50">
+                <TR key={o.id} className="glass-row rounded-xl">
                   <TD className="font-mono">
                     <a className="text-blue-600" href={`/track/${o.code}`}>{o.code}</a>
                   </TD>
                   <TD>{o.customer.name}</TD>
                   <TD>{o.service}</TD>
                   <TD><StatusBadge status={o.status as any} /></TD>
-                  <TD>{new Date(o.createdAt).toLocaleString()}</TD>
+                  <TD>{formatYMD_HM(o.createdAt as any)}</TD>
                 </TR>
               ))}
             </TBody>

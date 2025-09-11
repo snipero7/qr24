@@ -1,6 +1,7 @@
 import { prisma } from "@/server/db";
 import { verifySignature } from "@/server/qr";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { formatYMD_HM } from "@/lib/date";
 
 export default async function TrackPage({ params, searchParams }: { params: { code: string }, searchParams: { t?: string } }) {
   const code = params.code;
@@ -8,21 +9,34 @@ export default async function TrackPage({ params, searchParams }: { params: { co
   const order = await prisma.order.findUnique({ where: { code }, select: { code: true, status: true, deviceModel: true, updatedAt: true } });
 
   if (!order) {
-    return <div className="p-6">لا يوجد طلب بهذا الكود.</div>;
+    return (
+      <div className="container max-w-xl mx-auto">
+        <section className="card tonal p-0">
+          <div className="card-header">
+            <h2 className="card-title">تتبع الطلب</h2>
+          </div>
+          <div className="card-section text-sm">لا يوجد طلب بهذا الكود.</div>
+        </section>
+      </div>
+    );
   }
 
   const verified = t ? verifySignature(code, t) : true; // نسمح بدون توقيع في التطوير
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">تتبع الطلب</h1>
-      {!verified && <p className="text-red-600">توقيع غير صالح</p>}
-      <div className="space-y-2">
-        <p>كود الطلب: <b className="font-mono">{order.code}</b></p>
-        <p className="flex items-center gap-2">الحالة الحالية: <StatusBadge status={order.status as any} /></p>
-        {order.deviceModel && <p>نوع الجهاز: {order.deviceModel}</p>}
-        <p className="text-sm text-gray-500">آخر تحديث: {new Date(order.updatedAt).toLocaleString()}</p>
-      </div>
+    <div className="container max-w-xl mx-auto">
+      <section className="card tonal p-0">
+        <div className="card-header">
+          <h2 className="card-title">تتبع الطلب</h2>
+        </div>
+        <div className="card-section space-y-2">
+          {!verified && <p className="text-red-600">توقيع غير صالح</p>}
+          <p>كود الطلب: <b className="font-mono">{order.code}</b></p>
+          <p className="flex items-center gap-2">الحالة الحالية: <StatusBadge status={order.status as any} /></p>
+          {order.deviceModel && <p>نوع الجهاز: {order.deviceModel}</p>}
+          <p className="text-sm text-gray-500">آخر تحديث: {formatYMD_HM(order.updatedAt as any)}</p>
+        </div>
+      </section>
     </div>
   );
 }

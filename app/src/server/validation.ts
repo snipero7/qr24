@@ -21,7 +21,12 @@ export const updateStatusSchema = z.object({
 
 export const deliverOrderSchema = z.object({
   collectedPrice: z.coerce.number().positive(),
-});
+  extraCharge: z.coerce.number().nonnegative().default(0).optional(),
+  extraReason: z.string().optional(),
+}).refine((data) => {
+  if ((data.extraCharge ?? 0) > 0) return !!(data.extraReason && data.extraReason.trim().length > 0);
+  return true;
+}, { message: 'يجب إدخال سبب للرسوم الإضافية', path: ['extraReason'] });
 
 export const createDebtSchema = z.object({
   shopName: z.string().min(1),

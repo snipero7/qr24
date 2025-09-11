@@ -4,8 +4,12 @@ import { redirect } from "next/navigation";
 import { DeliverDialog } from "@/components/DeliverDialog";
 import { ChangeStatusForm } from "@/components/ChangeStatusForm";
 import Link from "next/link";
+import { formatYMD_HM } from "@/lib/date";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { orderTemplateForStatus } from "@/config/notifications";
+import { DeliveryNotifier } from "@/components/orders/DeliveryNotifier";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { FileDown, Printer } from "lucide-react";
 
 export default async function OrderShow({ params }: { params: { id: string } }) {
   const session = await getAuthSession();
@@ -16,40 +20,96 @@ export default async function OrderShow({ params }: { params: { id: string } }) 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">تفاصيل الطلب</h1>
-        <Link className="text-blue-600" href={`/track/${o.code}`}>عرض تتبع</Link>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold">تفاصيل الطلب</h1>
+          <DeliveryNotifier orderId={o.id} initialStatus={o.status} />
+        </div>
+        <Link className="btn-outline h-9" href={`/track/${o.code}`}>عرض تتبع</Link>
       </div>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Info label="الكود" value={<code className="font-mono">{o.code}</code>} />
-        <Info label="الحالة" value={<StatusBadge status={o.status as any} />} />
-        <Info label="العميل" value={`${o.customer.name} (${o.customer.phone})`} />
-        <Info label="الخدمة" value={o.service} />
-        {o.deviceModel && <Info label="الجهاز" value={o.deviceModel} />}
-        {o.imei && <Info label="IMEI" value={o.imei} />}
-        <Info label="السعر التقديري" value={`${o.originalPrice}`} />
-        {o.collectedPrice && <Info label="المحصّل" value={`${o.collectedPrice}`} />}
-        {o.receiptUrl && <Info label="الإيصال" value={<a className="text-blue-600" href={o.receiptUrl} target="_blank">تنزيل PDF</a>} />}
-        <Info label="طباعة" value={<a className="text-blue-600" href={`/orders/${o.id}/receipt`} target="_blank">طباعة HTML</a>} />
+      <section className="card tonal">
+        <div className="card-header">
+          <h2 className="card-title">بيانات الطلب</h2>
+        </div>
+        <div className="card-section grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Info label="الكود" value={<code className="font-mono">{o.code}</code>} />
+          <Info label="الحالة" value={<StatusBadge status={o.status as any} />} />
+          <Info label="العميل" value={`${o.customer.name} (${o.customer.phone})`} />
+          <Info label="الخدمة" value={o.service} />
+          {o.deviceModel && <Info label="الجهاز" value={o.deviceModel} />}
+          {o.imei && <Info label="IMEI" value={o.imei} />}
+        <Info label="السعر الأساسي" value={`${o.originalPrice}`} />
+        {typeof (o as any).extraCharge === 'number' && Number((o as any).extraCharge) > 0 && (
+          <Info label={`رسوم إضافية${(o as any).extraReason ? ` (${(o as any).extraReason})` : ''}`}
+                value={`${Number((o as any).extraCharge)}`} />
+        )}
+        {o.collectedPrice && (
+          <>
+            <Info label="الإجمالي قبل الخصم" value={`${Number(o.originalPrice) + Number((o as any).extraCharge || 0)}`} />
+            <Info label="الخصم" value={`${Math.max(0, Number(o.originalPrice) + Number((o as any).extraCharge || 0) - Number(o.collectedPrice)).toFixed(2)} ر.س`} />
+            <Info label="بعد الخصم" value={`${o.collectedPrice}`} />
+          </>
+        )}
+          {o.receiptUrl && (
+            <Info
+              label="الإيصال"
+              value={
+                <a
+                  className="icon-ghost"
+                  title="تنزيل PDF"
+                  aria-label="تنزيل PDF"
+                  href={o.receiptUrl}
+                  target="_blank"
+                >
+                  <FileDown size={24} />
+                </a>
+              }
+            />
+          )}
+        <Info
+          label="طباعة"
+          value={
+            <a
+              className="icon-ghost"
+              title="طباعة HTML"
+              aria-label="طباعة HTML"
+              href={`/orders/${o.id}/receipt`}
+              target="_blank"
+            >
+              <Printer size={24} />
+            </a>
+          }
+        />
+        </div>
       </section>
 
       <div className="flex gap-4 items-center">
         <ChangeStatusForm orderId={o.id} current={o.status} />
-        {o.status !== "DELIVERED" && <DeliverDialog orderId={o.id} />}
-        <WhatsAppButton
-          phone={o.customer.phone}
-          templateKey={o.status === 'READY' ? 'order.ready' : 'order.delivered'}
-          params={{ customerName: o.customer.name, orderCode: o.code, service: o.service, collectedPrice: Number(o.collectedPrice ?? 0), receiptUrl: o.receiptUrl || '' }}
-        />
+        {o.status !== "DELIVERED" && <DeliverDialog orderId={o.id} defaultAmount={Number(o.originalPrice)} phone={o.customer.phone} customerName={o.customer.name} />}
+        {(() => {
+          const originalPrice = Number(o.originalPrice ?? 0);
+          const collected = Number(o.collectedPrice ?? 0);
+          const discount = Math.max(0, originalPrice - collected);
+          return (
+            <WhatsAppButton
+              phone={o.customer.phone}
+              templateKey={orderTemplateForStatus(o.status) as any}
+              params={{ customerName: o.customer.name, orderCode: o.code, service: o.service, collectedPrice: collected, originalPrice, discount, receiptUrl: o.receiptUrl || '' }}
+              variant="icon"
+            />
+          );
+        })()}
       </div>
 
-      <section>
-        <h2 className="font-semibold mb-2">سجل الحالات</h2>
-        <ul className="space-y-1 text-sm">
+      <section className="card tonal">
+        <div className="card-header">
+          <h2 className="card-title">سجل الحالات</h2>
+        </div>
+        <ul className="card-section space-y-1 text-sm">
           {o.statusLogs.map(l => (
             <li key={l.id} className="border rounded p-2">
               <div>من: {l.from || "—"} → إلى: <b>{l.to}</b></div>
-              <div className="text-gray-500">{new Date(l.at).toLocaleString()} {l.note?`— ${l.note}`:''}</div>
+              <div className="text-gray-500">{formatYMD_HM(l.at as any)} {l.note?`— ${l.note}`:''}</div>
             </li>
           ))}
         </ul>
@@ -60,8 +120,8 @@ export default async function OrderShow({ params }: { params: { id: string } }) 
 
 function Info({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="border rounded p-3 bg-white">
-      <div className="text-xs text-gray-500">{label}</div>
+    <div className="rounded-lg border border-black/10 dark:border-white/10 bg-[var(--surface)] p-3 flex items-baseline justify-between gap-4">
+      <div className="text-xs text-gray-500 shrink-0">{label}</div>
       <div className="font-medium">{value}</div>
     </div>
   );

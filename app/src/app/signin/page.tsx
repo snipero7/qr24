@@ -19,20 +19,24 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-16 border rounded p-4 bg-white">
-      <h1 className="text-lg font-bold mb-4">تسجيل الدخول</h1>
-      {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
-      <form onSubmit={submit} className="space-y-3">
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">البريد</label>
-          <input className="border rounded p-2 w-full" value={email} onChange={e=>setEmail(e.target.value)} />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">كلمة المرور</label>
-          <input type="password" className="border rounded p-2 w-full" value={password} onChange={e=>setPassword(e.target.value)} />
-        </div>
-        <button disabled={loading} className="btn-primary w-full">{loading?"جارٍ...":"دخول"}</button>
-      </form>
+    <div className="max-w-sm mx-auto mt-16 card tonal p-0">
+      <div className="card-header">
+        <h1 className="card-title">تسجيل الدخول</h1>
+      </div>
+      <div className="card-section">
+        {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
+        <form onSubmit={submit} className="space-y-3">
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">البريد</label>
+            <input className="input w-full" value={email} onChange={e=>setEmail(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">كلمة المرور</label>
+            <input type="password" className="input w-full" value={password} onChange={e=>setPassword(e.target.value)} />
+          </div>
+          <button disabled={loading} className="btn-primary w-full">{loading?"جارٍ...":"دخول"}</button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -3,83 +3,54 @@ import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import NewDebtForm from "@/components/debts/NewDebtForm";
+import { normalizeNumberInput } from "@/lib/utils";
+import DebtsTree, { DebtGroup } from "@/components/debts/DebtsTree";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { debtTemplateForStatus } from "@/config/notifications";
 
 export default async function DebtsPage() {
   const session = await getAuthSession();
   if (!session) redirect("/signin");
   const items = await prisma.debt.findMany({ include: { payments: true }, orderBy: { createdAt: "desc" } });
+  const shopsMap = new Map<string, { shopName: string; phone?: string | null }>();
+  for (const d of items) {
+    const key = `${d.shopName}|${d.phone || ''}`;
+    if (!shopsMap.has(key)) shopsMap.set(key, { shopName: d.shopName, phone: d.phone });
+  }
+  const shops = Array.from(shopsMap.values());
+
+  // Build groups per shop
+  const groups: DebtGroup[] = [];
+  const byKey = new Map<string, DebtGroup>();
+  for (const d of items) {
+    const paid = d.payments.reduce((s,p)=>s+Number(p.amount),0);
+    const remaining = Math.max(0, Number(d.amount)-paid);
+    const key = `${d.shopName}|${d.phone || ''}`;
+    if (!byKey.has(key)) byKey.set(key, { shopName: d.shopName, phone: d.phone, debts: [] });
+    byKey.get(key)!.debts.push({ id: d.id, service: d.service, amount: Number(d.amount), paid, remaining, status: d.status, createdAt: d.createdAt.toISOString() });
+  }
+  for (const g of byKey.values()) groups.push(g);
+
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-bold">الديون</h1>
       <div className="flex items-center gap-2">
-        <NewDebtForm />
-        <a className="border px-3 py-2 rounded" href="/api/debts/export">تصدير CSV</a>
+        <NewDebtForm shops={shops} action={createDebt} />
       </div>
-      <div className="overflow-x-auto">
-        <Table>
-          <THead>
-            <TR>
-              <TH>المحل</TH>
-              <TH>الجوال</TH>
-              <TH>الخدمة</TH>
-              <TH>الإجمالي</TH>
-              <TH>المدفوع</TH>
-              <TH>المتبقي</TH>
-              <TH>الحالة</TH>
-              <TH>واتساب</TH>
-              <TH>إجراء</TH>
-            </TR>
-          </THead>
-          <TBody>
-            {items.map(d => {
-              const paid = d.payments.reduce((s,p)=>s+Number(p.amount),0);
-              const remaining = Math.max(0, Number(d.amount)-paid);
-              return (
-                <TR key={d.id}>
-                  <TD><a className="text-blue-600" href={`/debts/${d.id}`}>{d.shopName}</a></TD>
-                  <TD>{d.phone || '-'}</TD>
-                  <TD>{d.service}</TD>
-                  <TD>{String(d.amount)}</TD>
-                  <TD>{paid}</TD>
-                  <TD>{remaining}</TD>
-                  <TD>{d.status}</TD>
-                  <TD>
-                    <WhatsAppButton
-                      phone={d.phone}
-                      templateKey="debt.reminder"
-                      params={{ shopName: d.shopName, remaining, service: d.service }}
-                    />
-                  </TD>
-                  <TD><AddPaymentDialog debtId={d.id} /></TD>
-                </TR>
-              );
-            })}
-          </TBody>
-        </Table>
-      </div>
+      <DebtsTree groups={groups} />
     </div>
   );
 }
 
-function NewDebtForm() {
-  return (
-    <form action={createDebt} className="grid grid-cols-1 sm:grid-cols-6 gap-2 border p-3 rounded bg-white">
-      <input name="shopName" required placeholder="اسم المحل" className="border rounded p-2" />
-      <input name="phone" placeholder="جوال المحل" className="border rounded p-2" />
-      <input name="service" required placeholder="الخدمة" className="border rounded p-2" />
-      <input name="amount" required type="number" placeholder="المبلغ" className="border rounded p-2" />
-      <input name="notes" placeholder="ملاحظات" className="border rounded p-2" />
-      <button className="btn-primary">إضافة دين</button>
-    </form>
-  );
-}
+// kept createDebt server action below
 
 async function createDebt(formData: FormData) {
   "use server";
   const payload = {
     shopName: String(formData.get("shopName")),
-    phone: (formData.get("phone") as string) || undefined,
+    phone: (() => { const raw = (formData.get("phone") as string) || ''; const norm = normalizeNumberInput(raw); return norm || undefined; })(),
     service: String(formData.get("service")),
     amount: Number(formData.get("amount")),
     notes: (formData.get("notes") as string) || undefined,
