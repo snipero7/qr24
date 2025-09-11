@@ -10,14 +10,27 @@ export function ThemeToggle() {
   useEffect(() => {
     const saved = localStorage.getItem("theme");
     if (saved === "light" || saved === "dark") {
-      setTheme(saved);
-      applyTheme(saved);
-    } else {
+      setTheme(saved as Theme);
+      applyTheme(saved as Theme);
+      return;
+    }
+    // No saved preference: try settings first, then media query
+    (async () => {
+      try {
+        const res = await fetch("/api/settings");
+        if (res.ok) {
+          const data = await res.json();
+          const uiTheme = (data?.uiTheme === "dark" ? "dark" : "light") as Theme;
+          setTheme(uiTheme);
+          applyTheme(uiTheme);
+          return;
+        }
+      } catch {}
       const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
       const initial: Theme = prefersDark ? "dark" : "light";
       setTheme(initial);
       applyTheme(initial);
-    }
+    })();
   }, []);
 
   function applyTheme(t: Theme) {
