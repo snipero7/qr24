@@ -5,6 +5,7 @@ import { Dialog, DialogHeader } from "@/components/ui/dialog";
 import { AmountPad } from "@/components/ui/amount-pad";
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
+import { showToast } from "@/components/ui/toast";
 
 export function AddPaymentDialog({ debtId, variant = "text" }: { debtId: string; variant?: "text" | "icon" }) {
   const [open, setOpen] = useState(false);
@@ -20,9 +21,11 @@ export function AddPaymentDialog({ debtId, variant = "text" }: { debtId: string;
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'فشل إضافة الدفعة');
       setOpen(false);
+      try { showToast("تمت إضافة الدفعة", "success"); } catch {}
       r.refresh();
     } catch (e: any) {
       setError(e.message);
+      try { showToast(e.message || 'فشل إضافة الدفعة', 'error'); } catch {}
     } finally {
       setLoading(false);
     }

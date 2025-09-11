@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/components/ui/toast";
 import { normalizeNumberInput } from "@/lib/utils";
 import { HandCoins, Check } from "lucide-react";
 
@@ -97,6 +98,7 @@ export function DeliverDialog({ orderId, defaultAmount, phone, customerName }: {
         window.dispatchEvent(new CustomEvent('order-status-updated'));
       } catch {}
       setOpen(false);
+      try { showToast("تم التسليم وتسجيل التحصيل", "success"); } catch {}
       // Ask to open WhatsApp with delivered receipt message
       try {
         if (phone && customerName) {
@@ -118,6 +120,7 @@ export function DeliverDialog({ orderId, defaultAmount, phone, customerName }: {
       r.refresh();
     } catch (e: any) {
       setError(e.message);
+      try { showToast(e.message || "فشل التسليم", "error"); } catch {}
     } finally {
       setLoading(false);
     }

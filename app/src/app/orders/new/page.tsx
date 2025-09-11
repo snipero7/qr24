@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { AmountPad } from "@/components/ui/amount-pad";
 import { normalizeNumberInput } from "@/lib/utils";
+import { showToast } from "@/components/ui/toast";
 
 export default function NewOrderPage() {
   const r = useRouter();
@@ -32,9 +33,11 @@ export default function NewOrderPage() {
       const res = await fetch("/api/orders", { method: "POST", body: JSON.stringify(payload) });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "فشل إنشاء الطلب");
+      try { showToast("تم إنشاء الطلب بنجاح", "success"); } catch {}
       r.push(`/track/${data.code}`);
     } catch (e: any) {
       setError(e.message);
+      try { showToast(e.message || "فشل إنشاء الطلب", "error"); } catch {}
     } finally {
       setLoading(false);
     }

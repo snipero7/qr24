@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { STATUS_LABELS } from "@/lib/statusLabels";
 import { Save } from "lucide-react";
+import { showToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","CANCELED"] as const; // DELIVERED عبر مسار التسليم
@@ -26,10 +27,12 @@ export function ChangeStatusForm({ orderId, current }: { orderId: string; curren
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "فشل تحديث الحالة");
+      try { showToast("تم تحديث الحالة", "success"); } catch {}
       try { window.dispatchEvent(new CustomEvent('order-status-updated')); } catch {}
       r.refresh();
     } catch (e: any) {
       setError(e.message);
+      try { showToast(e.message || "فشل تحديث الحالة", "error"); } catch {}
     } finally {
       setLoading(false);
     }
