@@ -3,6 +3,7 @@ import { Document, Page, Text, View, StyleSheet, Image, renderToBuffer, Font } f
 import fs from "node:fs";
 import path from "node:path";
 import { storeConfig } from "@/config/notifications";
+import { getSettings } from "@/server/settings";
 import { formatYMD_HM } from "@/lib/date";
 
 type OrderInfo = {
@@ -90,6 +91,14 @@ function formatSAR(n: number) {
 function formatDate(d: Date) { return formatYMD_HM(d); }
 
 export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
+  // Load settings (store name/address, footer, language, QR toggle, stamp)
+  const s = await getSettings();
+  const storeName = s?.storeName || storeConfig.storeName;
+  const storeAddress = s?.storeAddress || storeConfig.storeAddress;
+  const receiptFooter = s?.receiptFooter || "";
+  const showQr = s?.receiptQrEnabled !== false;
+  const receiptLang = (s?.receiptLang as any) || "AR"; // "AR" | "AR_EN"
+  const stampUrl = s?.receiptStampUrl || undefined;
   const font = ensureArabicFont();
   const hasLogo = !!process.env.NEXT_PUBLIC_STORE_LOGO;
   const logoPath = process.env.NEXT_PUBLIC_STORE_LOGO
@@ -105,23 +114,23 @@ export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
           <Text style={styles.header}>إيصال تسليم</Text>
           {hasLogo && logoPath ? <Image style={{ width: 96, height: 36 }} src={logoPath} /> : null}
         </View>
-        <Text style={styles.subheader}>{storeConfig.storeName} — {storeConfig.storeAddress}</Text>
+        <Text style={styles.subheader}>{storeName} — {storeAddress}</Text>
         <View style={styles.box}>
           <View style={styles.row}>
-            <Text style={styles.label}>كود الطلب:</Text>
+            <Text style={styles.label}>كود الطلب{receiptLang === 'AR_EN' ? ' / Order Code' : ''}:</Text>
             <Text>{order.code}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>العميل:</Text>
+            <Text style={styles.label}>العميل{receiptLang === 'AR_EN' ? ' / Customer' : ''}:</Text>
             <Text>{order.customer.name} ({order.customer.phone})</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>الخدمة:</Text>
+            <Text style={styles.label}>الخدمة{receiptLang === 'AR_EN' ? ' / Service' : ''}:</Text>
             <Text>{order.service}</Text>
           </View>
           {order.deviceModel && (
             <View style={styles.row}>
-              <Text style={styles.label}>الجهاز:</Text>
+              <Text style={styles.label}>الجهاز{receiptLang === 'AR_EN' ? ' / Device' : ''}:</Text>
               <Text>{order.deviceModel}</Text>
             </View>
           )}
@@ -133,39 +142,52 @@ export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
             return (
               <>
                 <View style={styles.row}>
-                  <Text style={styles.label}>السعر الأساسي:</Text>
+                  <Text style={styles.label}>السعر الأساسي{receiptLang === 'AR_EN' ? ' / Base Price' : ''}:</Text>
                   <Text>{formatSAR(base)}</Text>
                 </View>
                 {extra > 0 ? (
                   <View style={styles.row}>
-                    <Text style={styles.label}>رسوم إضافية{order.extraReason ? ` (${order.extraReason})` : ''}:</Text>
+                    <Text style={styles.label}>رسوم إضافية{order.extraReason ? ` (${order.extraReason})` : ''}{receiptLang === 'AR_EN' ? ' / Extra' : ''}:</Text>
                     <Text>{formatSAR(extra)}</Text>
                   </View>
                 ) : null}
                 <View style={styles.row}>
-                  <Text style={styles.label}>الإجمالي قبل الخصم:</Text>
+                  <Text style={styles.label}>الإجمالي قبل الخصم{receiptLang === 'AR_EN' ? ' / Total before Discount' : ''}:</Text>
                   <Text>{formatSAR(effective)}</Text>
                 </View>
                 <View style={styles.row}>
-                  <Text style={styles.label}>الخصم:</Text>
+                  <Text style={styles.label}>الخصم{receiptLang === 'AR_EN' ? ' / Discount' : ''}:</Text>
                   <Text>{formatSAR(discount)}</Text>
                 </View>
               </>
             );
           })()}
           <View style={styles.row}>
-            <Text style={styles.label}>المبلغ بعد الخصم:</Text>
+            <Text style={styles.label}>المبلغ بعد الخصم{receiptLang === 'AR_EN' ? ' / Amount Paid' : ''}:</Text>
             <Text>{formatSAR(order.collectedPrice)}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>تاريخ التسليم:</Text>
+            <Text style={styles.label}>تاريخ التسليم{receiptLang === 'AR_EN' ? ' / Delivered At' : ''}:</Text>
             <Text>{formatDate(order.collectedAt)}</Text>
           </View>
         </View>
-        <View style={{ marginTop: 16, alignItems: "center" }}>
-          <Image style={styles.qr} src={qrDataUrl} />
-          <Text>للتتبع: /track/{order.code}</Text>
-        </View>
+        {showQr && (
+          <View style={{ marginTop: 16, alignItems: "center" }}>
+            <Image style={styles.qr} src={qrDataUrl} />
+            <Text>للتتبع: /track/{order.code}</Text>
+          </View>
+        )}
+        {stampUrl ? (
+          <View style={{ marginTop: 12, alignItems: "flex-start" }}>
+            {/* Stamp placed lightly at left (considering RTL layout) */}
+            <Image style={{ width: 120, height: 120, opacity: 0.85 }} src={stampUrl} />
+          </View>
+        ) : null}
+        {receiptFooter ? (
+          <View style={{ marginTop: 12 }}>
+            <Text style={{ fontSize: 10, color: "#666" }}>{receiptFooter}</Text>
+          </View>
+        ) : null}
       </Page>
     </Document>
   );
