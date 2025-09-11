@@ -1,0 +1,129 @@
+"use client";
+import { useEffect, useState } from "react";
+import { Save, Store, MessageSquare, FileText, MonitorCog, Database, Shield } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+
+type Tab = "store"|"notify"|"receipt"|"ui"|"data"|"advanced";
+
+export default function SettingsPage() {
+  const [tab, setTab] = useState<Tab>("store");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string| null>(null);
+  const [s, setS] = useState<any>({});
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        setS(data);
+      } catch (e:any) {
+        setErr(e.message);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  async function save(partial: any) {
+    setSaving(true); setErr(null);
+    try {
+      const res = await fetch("/api/settings", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...s, ...partial }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "فشل الحفظ");
+      setS(data);
+      try { alert("تم الحفظ بنجاح"); } catch {}
+    } catch (e:any) { setErr(e.message); }
+    setSaving(false);
+  }
+
+  if (loading) return <div className="container">جارٍ التحميل…</div>;
+
+  return (
+    <div className="space-y-4">
+      <h1 className="text-xl font-bold">الإعدادات</h1>
+      {err && <div className="text-red-600 text-sm">{err}</div>}
+
+      <div className="card tonal p-0">
+        <div className="card-header">
+          <div className="flex items-center gap-2">
+            <button className={`icon-ghost ${tab==='store'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('store')} title="المتجر"><Store size={20}/></button>
+            <button className={`icon-ghost ${tab==='notify'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('notify')} title="الرسائل"><MessageSquare size={20}/></button>
+            <button className={`icon-ghost ${tab==='receipt'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('receipt')} title="الإيصال"><FileText size={20}/></button>
+            <button className={`icon-ghost ${tab==='ui'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('ui')} title="الواجهة"><MonitorCog size={20}/></button>
+            <button className={`icon-ghost ${tab==='data'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('data')} title="البيانات"><Database size={20}/></button>
+            <button className={`icon-ghost ${tab==='advanced'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('advanced')} title="متقدم"><Shield size={20}/></button>
+          </div>
+          <button className="icon-ghost" onClick={()=>save({})} title="حفظ الكل" aria-label="حفظ"><Save size={24}/></button>
+        </div>
+
+        <div className="card-section">
+          {tab === 'store' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <L label="اسم المتجر"><Input value={s.storeName||''} onChange={e=>setS({...s, storeName: e.target.value})}/></L>
+              <L label="رقم التواصل"><Input value={s.storePhone||''} onChange={e=>setS({...s, storePhone: e.target.value})}/></L>
+              <L label="العنوان"><Input value={s.storeAddress||''} onChange={e=>setS({...s, storeAddress: e.target.value})}/></L>
+              <L label="شعار المتجر (URL)"><Input value={s.storeLogoUrl||''} onChange={e=>setS({...s, storeLogoUrl: e.target.value})}/></L>
+              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ storeName: s.storeName, storePhone: s.storePhone, storeAddress: s.storeAddress, storeLogoUrl: s.storeLogoUrl })} disabled={saving} className="icon-ghost"><Save size={24}/></Button></div>
+            </div>
+          )}
+
+          {tab === 'notify' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <L label="order.ready"><Textarea rows={4} value={s.waTemplates?.["order.ready"]||''} onChange={e=>setS({...s, waTemplates: { ...(s.waTemplates||{}), ["order.ready"]: e.target.value }})}/></L>
+              <L label="order.delivered"><Textarea rows={4} value={s.waTemplates?.["order.delivered"]||''} onChange={e=>setS({...s, waTemplates: { ...(s.waTemplates||{}), ["order.delivered"]: e.target.value }})}/></L>
+              <L label="debt.reminder"><Textarea rows={4} value={s.waTemplates?.["debt.reminder"]||''} onChange={e=>setS({...s, waTemplates: { ...(s.waTemplates||{}), ["debt.reminder"]: e.target.value }})}/></L>
+              <L label="تفعيل أزرار واتساب"><Select value={(s.waEnabled?'1':'0')} onChange={e=>setS({...s, waEnabled: e.target.value==='1'})}><option value="1">مفعّل</option><option value="0">معطّل</option></Select></L>
+              <L label="أيام تذكير الدين"><Input type="number" value={s.debtReminderDays||7} onChange={e=>setS({...s, debtReminderDays: Number(e.target.value)})}/></L>
+              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ waTemplates: s.waTemplates, waEnabled: s.waEnabled, debtReminderDays: s.debtReminderDays })} disabled={saving} className="icon-ghost"><Save size={24}/></Button></div>
+            </div>
+          )}
+
+          {tab === 'receipt' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <L label="نص أسفل الإيصال"><Textarea rows={3} value={s.receiptFooter||''} onChange={e=>setS({...s, receiptFooter: e.target.value})}/></L>
+              <L label="لغة الإيصال"><Select value={s.receiptLang||'AR'} onChange={e=>setS({...s, receiptLang: e.target.value})}><option value="AR">عربي فقط</option><option value="AR_EN">عربي + إنجليزي</option></Select></L>
+              <L label="إظهار QR"><Select value={(s.receiptQrEnabled?'1':'0')} onChange={e=>setS({...s, receiptQrEnabled: e.target.value==='1'})}><option value="1">نعم</option><option value="0">لا</option></Select></L>
+              <L label="ختم المتجر (URL)"><Input value={s.receiptStampUrl||''} onChange={e=>setS({...s, receiptStampUrl: e.target.value})}/></L>
+              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ receiptFooter: s.receiptFooter, receiptLang: s.receiptLang, receiptQrEnabled: s.receiptQrEnabled, receiptStampUrl: s.receiptStampUrl })} disabled={saving} className="icon-ghost"><Save size={24}/></Button></div>
+            </div>
+          )}
+
+          {tab === 'ui' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <L label="الوضع الافتراضي"><Select value={s.uiTheme||'light'} onChange={e=>setS({...s, uiTheme: e.target.value})}><option value="light">فاتح</option><option value="dark">داكن</option></Select></L>
+              <L label="صفوف الجداول"><Select value={String(s.uiTableRows||25)} onChange={e=>setS({...s, uiTableRows: Number(e.target.value)})}><option value="10">10</option><option value="25">25</option><option value="50">50</option></Select></L>
+              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ uiTheme: s.uiTheme, uiTableRows: s.uiTableRows })} disabled={saving} className="icon-ghost"><Save size={24}/></Button></div>
+            </div>
+          )}
+
+          {tab === 'data' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <a className="icon-ghost" title="تصدير الطلبات" href="/api/orders/export"><Database size={24}/></a>
+              <a className="icon-ghost" title="تصدير الديون" href="/api/debts/export"><Database size={24}/></a>
+              <div className="sm:col-span-2 text-sm text-gray-600">ميزة Google Drive سيتم تفعيلها لاحقًا (placeholder).</div>
+            </div>
+          )}
+
+          {tab === 'advanced' && (
+            <div className="text-sm text-gray-600">إعدادات متقدمة (S3/Redis) — لاحقًا.</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function L({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-sm text-gray-600 mb-1">{label}</label>
+      {children}
+    </div>
+  );
+}
+

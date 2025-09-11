@@ -1,6 +1,7 @@
 "use client";
+import { useEffect, useState } from "react";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
-import { templates, storeConfig, TemplateKey, describeTemplate } from "@/config/notifications";
+import { templates as defaultTemplates, storeConfig, TemplateKey, describeTemplate } from "@/config/notifications";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -10,11 +11,31 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
+let settingsCache: any | null = null;
+
 export function WhatsAppButton({ phone, templateKey, params, variant = "icon" }: { phone?: string | null; templateKey: TemplateKey; params: Record<string, string | number>; variant?: "icon" | "text" }) {
-  const tpl = templates[templateKey];
-  const href = phone ? buildWhatsAppLink(phone, tpl, { ...params, ...storeConfig }) : "";
+  const [settings, setSettings] = useState<any | null>(settingsCache);
+  useEffect(() => {
+    if (settingsCache) return;
+    (async () => {
+      try {
+        const res = await fetch("/api/settings");
+        if (!res.ok) return;
+        const data = await res.json();
+        settingsCache = data;
+        setSettings(data);
+      } catch {}
+    })();
+  }, []);
+
+  const tplText = (settings?.waTemplates?.[templateKey] as string) || defaultTemplates[templateKey];
+  const enabled = settings?.waEnabled !== undefined ? !!settings.waEnabled : true;
+  const storeName = settings?.storeName || storeConfig.storeName;
+  const storeAddress = settings?.storeAddress || storeConfig.storeAddress;
+  const mergedParams = { ...params, storeName, storeAddress };
+  const href = enabled && phone ? buildWhatsAppLink(phone, tplText, mergedParams) : "";
   const valid = Boolean(href);
-  const title = valid ? describeTemplate(templateKey) : "رقم غير صالح";
+  const title = enabled ? (valid ? describeTemplate(templateKey) : "رقم غير صالح") : "واتساب معطّل";
   const base = "inline-flex items-center justify-center border transition-colors";
   const cls = variant === "icon"
     ? `${base} w-8 h-8 rounded-full ${valid ? "border-green-600/30 hover:bg-green-50 dark:hover:bg-green-900/20" : "opacity-50 pointer-events-none"}`

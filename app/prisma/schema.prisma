@@ -60,6 +60,40 @@ model Order {
   receiptUrl     String?
 }
 
+model Settings {
+  id                 String   @id @default(cuid())
+  storeName          String
+  storePhone         String?
+  storeAddress       String?
+  storeLogoUrl       String?
+  receiptFooter      String?
+  receiptLang        String   @default("AR")
+  receiptQrEnabled   Boolean  @default(true)
+  receiptStampUrl    String?
+  waTemplates        Json
+  waEnabled          Boolean  @default(true)
+  debtReminderDays   Int      @default(7)
+  uiTheme            String   @default("light")
+  uiTableRows        Int      @default(25)
+  gdriveAccessToken  String?
+  gdriveRefreshToken String?
+  gdriveExpiry       DateTime?
+  backupAutoEnabled  Boolean  @default(false)
+  backupWeekday      Int      @default(6)
+  backupHour         Int      @default(3)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model BackupLog {
+  id        String   @id @default(cuid())
+  fileName  String
+  fileUrl   String?
+  status    String
+  message   String?
+  createdAt DateTime @default(now())
+}
+
 enum OrderStatus {
   NEW
   IN_PROGRESS

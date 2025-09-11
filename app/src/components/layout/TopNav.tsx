@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserNav } from "@/components/UserNav";
 import {
@@ -13,6 +13,7 @@ import {
   QrCode,
   Users,
   BarChart2,
+  Settings,
   Wrench,
   Menu
 } from "lucide-react";
@@ -31,11 +32,30 @@ function classNames(...parts: Array<string | false | null | undefined>) {
 export default function TopNav() {
   const pathname = usePathname() || "/";
   const [open, setOpen] = useState(false);
-  const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "منصة الصيانة";
+  const envStoreName = process.env.NEXT_PUBLIC_STORE_NAME || "منصة الصيانة";
   const envLogo = process.env.NEXT_PUBLIC_STORE_LOGO as string | undefined;
-  const logoSrc = envLogo
+  const envLogoSrc = envLogo
     ? (envLogo.startsWith("http") || envLogo.startsWith("/") ? envLogo : `/${envLogo}`)
     : "/logo-placeholder.svg";
+  const [brand, setBrand] = useState<{ name: string; logo: string }>({ name: envStoreName, logo: envLogoSrc });
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/settings");
+        if (!res.ok) return;
+        const data = await res.json();
+        const name = data?.storeName || envStoreName;
+        const logoUrl: string | undefined = data?.storeLogoUrl || envLogo;
+        const logo = logoUrl
+          ? (logoUrl.startsWith("http") || logoUrl.startsWith("/") ? logoUrl : `/${logoUrl}`)
+          : envLogoSrc;
+        if (mounted) setBrand({ name, logo });
+      } catch { /* ignore */ }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const items: NavItem[] = useMemo(
     () => [
@@ -81,6 +101,12 @@ export default function TopNav() {
         icon: BarChart2,
         isActive: (p) => p.startsWith("/reports"),
       },
+      {
+        href: "/settings",
+        label: "الإعدادات",
+        icon: Settings,
+        isActive: (p) => p.startsWith("/settings"),
+      },
     ],
     []
   );
@@ -114,8 +140,8 @@ export default function TopNav() {
             <Menu className="w-5 h-5" />
           </button>
           <Link href="/dashboard" className="font-semibold text-sm sm:text-base inline-flex items-center gap-2">
-            <img src={logoSrc} alt={storeName} className="w-7 h-7 rounded" />
-            <span>{storeName}</span>
+            <img src={brand.logo} alt={brand.name} className="w-7 h-7 rounded" />
+            <span>{brand.name}</span>
           </Link>
         </div>
 
