@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Save, Store, MessageSquare, FileText, MonitorCog, Database, Shield } from "lucide-react";
+import { DataTab } from "@/components/settings/DataTab";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
@@ -101,13 +102,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {tab === 'data' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <a className="icon-ghost" title="تصدير الطلبات" href="/api/orders/export"><Database size={24}/></a>
-              <a className="icon-ghost" title="تصدير الديون" href="/api/debts/export"><Database size={24}/></a>
-              <div className="sm:col-span-2 text-sm text-gray-600">ميزة Google Drive سيتم تفعيلها لاحقًا (placeholder).</div>
-            </div>
-          )}
+          {tab === 'data' && (<DataTab />)}
 
           {tab === 'advanced' && (
             <div className="text-sm text-gray-600">إعدادات متقدمة (S3/Redis) — لاحقًا.</div>
@@ -126,4 +121,3 @@ function L({ label, children }: { label: string; children: React.ReactNode }) {
     </div>
   );
 }
-
