@@ -12,12 +12,14 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { ActionBar } from "@/components/ui/action-bar";
 import { STATUS_LABELS } from "@/lib/statusLabels";
 import { normalizeNumberInput } from "@/lib/utils";
+import { getSettings } from "@/server/settings";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","DELIVERED","CANCELED"] as const;
 
 export default async function OrdersPage({ searchParams }: { searchParams: { q?: string; status?: string; phone?: string; createdFrom?: string; createdTo?: string; priceMin?: string; priceMax?: string; page?: string; take?: string } }) {
   const session = await getAuthSession();
   if (!session) redirect("/signin");
+  const settings = await getSettings();
   const qRaw = searchParams.q?.trim();
   const status = searchParams.status && statuses.includes(searchParams.status as any) ? searchParams.status : undefined;
   const phoneRaw = searchParams.phone?.trim();
@@ -30,7 +32,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
   const phoneNorm = phoneRaw ? normalizeNumberInput(phoneRaw) : undefined;
   const qNorm = qRaw ? normalizeNumberInput(qRaw) : undefined;
   const page = Number(searchParams.page || 1);
-  const take = Math.min(Number(searchParams.take || 20), 100);
+  const defaultTake = Number(settings.uiTableRows || 25);
+  const parsedTake = searchParams.take ? Number(searchParams.take) : defaultTake;
+  const take = Math.min(parsedTake || defaultTake, 100);
 
   const where: any = {};
   if (status) where.status = status;
