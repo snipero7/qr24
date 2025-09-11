@@ -29,7 +29,9 @@ export function DataTab() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "فشل النسخ");
       try {
-        alert("تم إنشاء نسخة احتياطية");
+        // dynamic import to avoid SSR edges when running tests
+        const mod = await import("@/components/ui/toast");
+        mod.showToast("تم إنشاء نسخة احتياطية", "success");
       } catch {}
       load();
     } catch (e: any) {
@@ -83,4 +85,3 @@ export function DataTab() {
     </div>
   );
 }
-

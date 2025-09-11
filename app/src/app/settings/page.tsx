@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/components/ui/toast";
 
 type Tab = "store"|"notify"|"receipt"|"ui"|"data"|"advanced";
 
@@ -37,7 +38,7 @@ export default function SettingsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "فشل الحفظ");
       setS(data);
-      try { alert("تم الحفظ بنجاح"); } catch {}
+      try { showToast("تم الحفظ بنجاح", "success"); } catch {}
     } catch (e:any) { setErr(e.message); }
     setSaving(false);
   }
