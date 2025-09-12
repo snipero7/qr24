@@ -1,5 +1,6 @@
 import { prisma } from "@/server/db";
 import { getSettings } from "@/server/settings";
+import { getRedis } from "@/server/redis";
 import fs from "node:fs/promises";
 import path from "node:path";
 import zlib from "node:zlib";
@@ -44,3 +45,24 @@ export async function listBackups(limit = 10) {
   return prisma.backupLog.findMany({ orderBy: { createdAt: "desc" }, take: limit });
 }
 
+// Check schedule and run at the configured weekday/hour in Asia/Riyadh (UTC+3)
+export async function maybeRunScheduledBackup(now: Date = new Date()) {
+  const s = await getSettings();
+  if (!s.backupAutoEnabled) return { skipped: true, reason: "disabled" } as any;
+  // Convert to KSA time (UTC+3, no DST)
+  const ksa = new Date(now.getTime() + 3 * 3600 * 1000);
+  const weekday = ksa.getUTCDay();
+  const hour = ksa.getUTCHours();
+  if (weekday !== s.backupWeekday || hour !== s.backupHour) return { skipped: true, reason: "schedule_mismatch" } as any;
+  // Prevent duplicate within the same hour using Redis NX key
+  const key = `backup:lock:${ksa.getUTCFullYear()}-${ksa.getUTCMonth() + 1}-${ksa.getUTCDate()}-${hour}`;
+  try {
+    const redis = getRedis() as any;
+    const set = await redis.set(key, "1", "NX", "EX", 3600);
+    if (set !== "OK") return { skipped: true, reason: "locked" } as any;
+  } catch (e) {
+    // If Redis unavailable, continue but still run once per request
+  }
+  const res = await createBackupNow();
+  return { skipped: false, ...res } as any;
+}

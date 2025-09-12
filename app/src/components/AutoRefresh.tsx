@@ -7,11 +7,16 @@ export default function AutoRefresh({ intervalMs = 15000 }: { intervalMs?: numbe
 
   useEffect(() => {
     let timer: any;
+    let cronTimer: any;
     function tick() {
       if (document.visibilityState === "visible") router.refresh();
     }
     timer = setInterval(tick, intervalMs);
-    return () => clearInterval(timer);
+    async function pingCron() {
+      try { await fetch('/api/backup/cron'); } catch {}
+    }
+    cronTimer = setInterval(() => { if (document.visibilityState === 'visible') pingCron(); }, 5 * 60 * 1000);
+    return () => { clearInterval(timer); clearInterval(cronTimer); };
   }, [router, intervalMs]);
 
   useEffect(() => {
@@ -22,4 +27,3 @@ export default function AutoRefresh({ intervalMs = 15000 }: { intervalMs?: numbe
 
   return null;
 }
-
