@@ -10,7 +10,8 @@ import { showToast } from "@/components/ui/toast";
 
 function UploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
   async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    const input = e.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
     const fd = new FormData();
     fd.append('file', file);
@@ -23,7 +24,7 @@ function UploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
     } catch (e:any) {
       try { showToast(e.message || 'فشل الرفع', 'error'); } catch {}
     } finally {
-      e.currentTarget.value = '';
+      try { input.value = ''; } catch {}
     }
   }
   return (

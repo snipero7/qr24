@@ -81,6 +81,12 @@ model Settings {
   backupAutoEnabled  Boolean  @default(false)
   backupWeekday      Int      @default(6)
   backupHour         Int      @default(3)
+  // Storage / Infra
+  s3Endpoint         String?
+  s3Bucket           String?
+  s3AccessKey        String?
+  s3Secret           String?
+  redisUrl           String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }

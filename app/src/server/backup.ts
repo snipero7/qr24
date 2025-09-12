@@ -36,7 +36,15 @@ export async function createBackupNow() {
   const localPath = path.join(dir, fileName);
   await fs.writeFile(localPath, gz);
 
-  const fileUrl = `/backups/${store}/${fileName}`;
+  let fileUrl = `/backups/${store}/${fileName}`;
+  try {
+    if ((s as any).gdriveAccessToken && (s as any).gdriveRefreshToken) {
+      const token = await ensureDriveToken(s as any);
+      const fileId = await uploadToDrive(token, fileName, gz);
+      if (fileId) fileUrl = `https://drive.google.com/file/d/${fileId}/view`;
+    }
+  } catch {}
+
   const log = await prisma.backupLog.create({ data: { fileName, fileUrl, status: "SUCCESS" } });
   return { fileUrl, log };
 }
@@ -65,4 +73,41 @@ export async function maybeRunScheduledBackup(now: Date = new Date()) {
   }
   const res = await createBackupNow();
   return { skipped: false, ...res } as any;
+}
+
+async function ensureDriveToken(s: any): Promise<string> {
+  const now = Date.now();
+  if (s.gdriveExpiry && new Date(s.gdriveExpiry).getTime() > now + 60_000) {
+    return s.gdriveAccessToken as string;
+  }
+  const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID || '',
+    client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
+    refresh_token: s.gdriveRefreshToken || '',
+    grant_type: 'refresh_token',
+  });
+  const resp = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: params.toString() } as any);
+  const data = await resp.json() as any;
+  if (!resp.ok) throw new Error('refresh failed');
+  await (prisma as any).settings.update({ where: { id: s.id }, data: { gdriveAccessToken: data.access_token, gdriveExpiry: data.expires_in ? new Date(Date.now() + Number(data.expires_in) * 1000) : null } });
+  return data.access_token as string;
+}
+
+async function uploadToDrive(accessToken: string, fileName: string, contentGz: Buffer): Promise<string | null> {
+  const boundary = 'BOUNDARY' + Date.now();
+  const delimiter = `--${boundary}`;
+  const closeDelim = `--${boundary}--`;
+  const metadata = { name: fileName, mimeType: 'application/gzip' } as any;
+  const head = Buffer.from(`${delimiter}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n`);
+  const mid = Buffer.from(`${delimiter}\r\nContent-Type: application/gzip\r\n\r\n`);
+  const tail = Buffer.from(`\r\n${closeDelim}`);
+  const body = Buffer.concat([head, mid, contentGz, tail]);
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': `multipart/related; boundary=${boundary}` },
+    body: body as any,
+  } as any);
+  const data = await res.json() as any;
+  if (!(res as any).ok) return null;
+  return data.id as string;
 }
