@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Database, CloudUpload } from "lucide-react";
+import { Database, CloudUpload, Link as LinkIcon, Unlink } from "lucide-react";
 
 export function DataTab() {
   const [busy, setBusy] = useState(false);
@@ -76,6 +76,20 @@ export function DataTab() {
         <button className="icon-ghost" onClick={backupNow} disabled={busy} title="إنشاء نسخة احتياطية الآن">
           <CloudUpload size={24} />
         </button>
+        {(() => {
+          if (typeof window === 'undefined') return null;
+          return (
+            <>
+              <span></span>
+              {/* Connect / Disconnect Google Drive */}
+              {!gConnected ? (
+                <a className="icon-ghost" href="/api/gdrive/oauth/start" title="ربط Google Drive"><LinkIcon size={24} /></a>
+              ) : (
+                <button className="icon-ghost" onClick={async ()=>{ try { const r=await fetch('/api/gdrive/oauth/disconnect',{method:'POST'}); const d=await r.json(); if(!r.ok) throw new Error(d?.message||'فشل'); setGConnected(false);} catch(e:any){} }} title="فصل Google Drive"><Unlink size={24}/></button>
+              )}
+            </>
+          );
+        })()}
       </div>
       <div className="card-section">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">

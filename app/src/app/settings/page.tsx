@@ -143,7 +143,14 @@ export default function SettingsPage() {
           {tab === 'data' && (<DataTab />)}
 
           {tab === 'advanced' && (
-            <div className="text-sm text-gray-600">إعدادات متقدمة (S3/Redis) — لاحقًا.</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <L label="S3 Endpoint"><Input value={s.s3Endpoint||''} onChange={e=>setS({...s, s3Endpoint: e.target.value})}/></L>
+              <L label="S3 Bucket"><Input value={s.s3Bucket||''} onChange={e=>setS({...s, s3Bucket: e.target.value})}/></L>
+              <L label="S3 Access Key"><Input type="password" value={s.s3AccessKey||''} onChange={e=>setS({...s, s3AccessKey: e.target.value})}/></L>
+              <L label="S3 Secret"><Input type="password" value={s.s3Secret||''} onChange={e=>setS({...s, s3Secret: e.target.value})}/></L>
+              <L label="Redis URL"><Input value={s.redisUrl||''} onChange={e=>setS({...s, redisUrl: e.target.value})}/></L>
+              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ s3Endpoint: s.s3Endpoint, s3Bucket: s.s3Bucket, s3AccessKey: s.s3AccessKey, s3Secret: s.s3Secret, redisUrl: s.redisUrl })} className="icon-ghost"><Save size={24}/></Button></div>
+            </div>
           )}
         </div>
       </div>
