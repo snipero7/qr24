@@ -46,3 +46,23 @@ export async function saveReceipt(buffer: Buffer, key: string, contentType = "ap
   return `/receipts/${path.basename(key)}`;
 }
 
+export async function saveUpload(buffer: Buffer, key: string, contentType = "application/octet-stream") {
+  if (isS3Enabled()) {
+    const { PutObjectCommand } = await import("@aws-sdk/client-s3");
+    const client = await getS3();
+    const Bucket = process.env.S3_BUCKET as string;
+    const Key = key;
+    await client.send(new PutObjectCommand({ Bucket, Key, Body: buffer, ContentType: contentType } as any));
+    const base = (process.env.S3_PUBLIC_BASE || process.env.S3_ENDPOINT) as string | undefined;
+    if (base) {
+      const normalized = base.replace(/\/$/, "");
+      return `${normalized}/${Bucket}/${Key}`;
+    }
+    return `https://${Bucket}.s3.amazonaws.com/${Key}`;
+  }
+  const uploadsDir = path.join(process.cwd(), "public", "uploads");
+  await fs.mkdir(uploadsDir, { recursive: true });
+  const filePath = path.join(uploadsDir, path.basename(key));
+  await fs.writeFile(filePath, buffer);
+  return `/uploads/${path.basename(key)}`;
+}

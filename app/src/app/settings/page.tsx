@@ -1,12 +1,38 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Save, Store, MessageSquare, FileText, MonitorCog, Database, Shield } from "lucide-react";
+import { Save, Store, MessageSquare, FileText, MonitorCog, Database, Shield, ImagePlus } from "lucide-react";
 import { DataTab } from "@/components/settings/DataTab";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { showToast } from "@/components/ui/toast";
+
+function UploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
+  async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await fetch('/api/uploads', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || 'فشل الرفع');
+      onUploaded(data.url);
+      try { showToast('تم رفع الملف', 'success'); } catch {}
+    } catch (e:any) {
+      try { showToast(e.message || 'فشل الرفع', 'error'); } catch {}
+    } finally {
+      e.currentTarget.value = '';
+    }
+  }
+  return (
+    <label className="icon-ghost cursor-pointer" title="رفع">
+      <ImagePlus size={20} />
+      <input type="file" accept="image/png,image/jpeg,image/svg+xml" className="hidden" onChange={onChange} />
+    </label>
+  );
+}
 
 type Tab = "store"|"notify"|"receipt"|"ui"|"data"|"advanced";
 
@@ -69,7 +95,12 @@ export default function SettingsPage() {
               <L label="اسم المتجر"><Input value={s.storeName||''} onChange={e=>setS({...s, storeName: e.target.value})}/></L>
               <L label="رقم التواصل"><Input value={s.storePhone||''} onChange={e=>setS({...s, storePhone: e.target.value})}/></L>
               <L label="العنوان"><Input value={s.storeAddress||''} onChange={e=>setS({...s, storeAddress: e.target.value})}/></L>
-              <L label="شعار المتجر (URL)"><Input value={s.storeLogoUrl||''} onChange={e=>setS({...s, storeLogoUrl: e.target.value})}/></L>
+              <L label="شعار المتجر (URL)">
+                <div className="flex items-center gap-2">
+                  <Input value={s.storeLogoUrl||''} onChange={e=>setS({...s, storeLogoUrl: e.target.value})}/>
+                  <UploadButton onUploaded={(url)=>{ setS({...s, storeLogoUrl: url}); save({ storeLogoUrl: url }); }} />
+                </div>
+              </L>
               <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ storeName: s.storeName, storePhone: s.storePhone, storeAddress: s.storeAddress, storeLogoUrl: s.storeLogoUrl })} disabled={saving} className="icon-ghost"><Save size={24}/></Button></div>
             </div>
           )}
@@ -90,7 +121,12 @@ export default function SettingsPage() {
               <L label="نص أسفل الإيصال"><Textarea rows={3} value={s.receiptFooter||''} onChange={e=>setS({...s, receiptFooter: e.target.value})}/></L>
               <L label="لغة الإيصال"><Select value={s.receiptLang||'AR'} onChange={e=>setS({...s, receiptLang: e.target.value})}><option value="AR">عربي فقط</option><option value="AR_EN">عربي + إنجليزي</option></Select></L>
               <L label="إظهار QR"><Select value={(s.receiptQrEnabled?'1':'0')} onChange={e=>setS({...s, receiptQrEnabled: e.target.value==='1'})}><option value="1">نعم</option><option value="0">لا</option></Select></L>
-              <L label="ختم المتجر (URL)"><Input value={s.receiptStampUrl||''} onChange={e=>setS({...s, receiptStampUrl: e.target.value})}/></L>
+              <L label="ختم المتجر (URL)">
+                <div className="flex items-center gap-2">
+                  <Input value={s.receiptStampUrl||''} onChange={e=>setS({...s, receiptStampUrl: e.target.value})}/>
+                  <UploadButton onUploaded={(url)=>{ setS({...s, receiptStampUrl: url}); save({ receiptStampUrl: url }); }} />
+                </div>
+              </L>
               <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ receiptFooter: s.receiptFooter, receiptLang: s.receiptLang, receiptQrEnabled: s.receiptQrEnabled, receiptStampUrl: s.receiptStampUrl })} disabled={saving} className="icon-ghost"><Save size={24}/></Button></div>
             </div>
           )}
