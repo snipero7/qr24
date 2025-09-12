@@ -13,7 +13,11 @@ export async function PUT(req: NextRequest) {
   const auth = await getAuthSession();
   if (!auth) return Response.json({ code: "UNAUTHORIZED" }, { status: 401 });
   const body = await req.json();
+  const role = (auth as any)?.user?.role;
+  const advancedKeys = ["s3Endpoint","s3Bucket","s3AccessKey","s3Secret","redisUrl"];
+  if (advancedKeys.some(k => k in body) && role !== 'ADMIN') {
+    return Response.json({ code: 'FORBIDDEN', message: 'صلاحيات غير كافية' }, { status: 403 });
+  }
   const s = await updateSettings(body);
   return Response.json(s);
 }
-
