@@ -1,6 +1,9 @@
+import { toLatinDigits } from "./utils";
+
 export function toE164KSA(input: string): string {
   if (!input) return "";
-  const digits = String(input).replace(/\D/g, "");
+  const ascii = toLatinDigits(String(input));
+  const digits = ascii.replace(/\D/g, "");
   if (/^9665\d{8}$/.test(digits)) return digits;
   if (/^05\d{8}$/.test(digits)) return `966${digits.slice(1)}`; // drop leading 0
   if (/^5\d{8}$/.test(digits)) return `966${digits}`;
@@ -18,4 +21,3 @@ export function buildWhatsAppLink(phone: string, template: string, params: Recor
   if (!e164) return "";
   return `https://wa.me/${e164}?text=${text}`;
 }
-

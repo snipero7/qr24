@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
-import TopNav from "@/components/layout/TopNav";
-import AutoRefresh from "@/components/AutoRefresh";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,9 +27,7 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
         <Providers>
-          <AutoRefresh intervalMs={15000} />
-          <TopNav />
-          <main className="container">{children}</main>
+          <div className="min-h-screen">{children}</div>
         </Providers>
       </body>
     </html>

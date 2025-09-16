@@ -11,6 +11,10 @@ describe('toE164KSA', () => {
   it('keeps 9665xxxxxxxx as is', () => {
     expect(toE164KSA('966512345678')).toBe('966512345678');
   });
+  it('converts Arabic-Indic digits to Latin before validation', () => {
+    expect(toE164KSA('٠٥٥١٢٣٤٥٦٧')).toBe('966551234567');
+    expect(toE164KSA('٩٦٦٥١٢٣٤٥٦٧٨')).toBe('966512345678');
+  });
   it('returns empty for invalid', () => {
     expect(toE164KSA('123')).toBe('');
   });
@@ -23,4 +27,3 @@ describe('buildWhatsAppLink', () => {
     expect(decodeURIComponent(url.split('text=')[1])).toContain('Hello Ali');
   });
 });
-

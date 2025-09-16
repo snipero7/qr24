@@ -16,6 +16,7 @@ import DeleteOrderButton from "@/components/orders/DeleteOrderButton";
 import EditOrderDialog from "@/components/orders/EditOrderDialog";
 import fs from "node:fs";
 import path from "node:path";
+import { toLatinDigits } from "@/lib/utils";
 
 export default async function OrderShow({ params }: { params: Promise<{ id: string }> }) {
   const _params: any = await params;
@@ -52,13 +53,13 @@ export default async function OrderShow({ params }: { params: Promise<{ id: stri
           <h2 className="card-title">بيانات الطلب</h2>
         </div>
         <div className="card-section grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Info label="الكود" value={<code className="font-mono">{o.code}</code>} />
+          <Info label="الكود" value={<code className="font-mono">{toLatinDigits(o.code)}</code>} />
           <Info label="الحالة" value={<StatusBadge status={o.status as any} />} />
-          <Info label="العميل" value={`${o.customer.name} (${o.customer.phone})`} />
+          <Info label="العميل" value={`${o.customer.name} (${toLatinDigits(o.customer.phone)})`} />
           <Info label="الخدمة" value={o.service} />
         {o.deviceModel && <Info label="الجهاز" value={o.deviceModel} />}
         {o.imei && <Info label="IMEI" value={o.imei} />}
-        <Info label="السعر الأساسي" value={`${o.originalPrice}`} />
+        <Info label="السعر الأساسي" value={toLatinDigits(Number(o.originalPrice))} />
         { (o as any).paymentMethod && (
           <Info
             label="وسيلة الدفع"
@@ -67,13 +68,13 @@ export default async function OrderShow({ params }: { params: Promise<{ id: stri
         )}
         {typeof (o as any).extraCharge === 'number' && Number((o as any).extraCharge) > 0 && (
           <Info label={`رسوم إضافية${(o as any).extraReason ? ` (${(o as any).extraReason})` : ''}`}
-                value={`${Number((o as any).extraCharge)}`} />
+                value={toLatinDigits(Number((o as any).extraCharge))} />
         )}
         {o.collectedPrice && (
           <>
-            <Info label="الإجمالي قبل الخصم" value={`${Number(o.originalPrice) + Number((o as any).extraCharge || 0)}`} />
-            <Info label="الخصم" value={`${Math.max(0, Number(o.originalPrice) + Number((o as any).extraCharge || 0) - Number(o.collectedPrice)).toFixed(2)} ر.س`} />
-            <Info label="بعد الخصم" value={`${o.collectedPrice}`} />
+            <Info label="الإجمالي قبل الخصم" value={toLatinDigits(Number(o.originalPrice) + Number((o as any).extraCharge || 0))} />
+            <Info label="الخصم" value={`${toLatinDigits(Math.max(0, Number(o.originalPrice) + Number((o as any).extraCharge || 0) - Number(o.collectedPrice)).toFixed(2))} ر.س`} />
+            <Info label="بعد الخصم" value={toLatinDigits(Number(o.collectedPrice))} />
           </>
         )}
           {downloadUrl ? (
@@ -123,16 +124,16 @@ export default async function OrderShow({ params }: { params: Promise<{ id: stri
         <ChangeStatusForm orderId={o.id} current={o.status} />
         <EditOrderDialog order={{ id: o.id, service: o.service, deviceModel: o.deviceModel || undefined, imei: o.imei || undefined, originalPrice: Number(o.originalPrice) }} />
         {isAdmin && <DeleteOrderButton orderId={o.id} />}
-        {o.status !== "DELIVERED" && <DeliverDialog orderId={o.id} defaultAmount={Number(o.originalPrice)} phone={o.customer.phone} customerName={o.customer.name} />}
+        {o.status !== "DELIVERED" && <DeliverDialog orderId={o.id} defaultAmount={Number(o.originalPrice)} phone={toLatinDigits(o.customer.phone)} customerName={o.customer.name} />}
         {(() => {
           const originalPrice = Number(o.originalPrice ?? 0);
           const collected = Number(o.collectedPrice ?? 0);
           const discount = Math.max(0, originalPrice - collected);
           return (
             <WhatsAppButton
-              phone={o.customer.phone}
+              phone={toLatinDigits(o.customer.phone)}
               templateKey={orderTemplateForStatus(o.status) as any}
-              params={{ customerName: o.customer.name, orderCode: o.code, service: o.service, collectedPrice: collected, originalPrice, discount, receiptUrl: o.receiptUrl || '' }}
+              params={{ customerName: o.customer.name, orderCode: toLatinDigits(o.code), service: o.service, collectedPrice: collected, originalPrice, discount, receiptUrl: o.receiptUrl || '' }}
               variant="icon"
             />
           );

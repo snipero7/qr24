@@ -13,7 +13,9 @@ import { orderTemplateForStatus } from "@/config/notifications";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ActionBar } from "@/components/ui/action-bar";
 import { STATUS_LABELS } from "@/lib/statusLabels";
-import { normalizeNumberInput } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { normalizeNumberInput, toLatinDigits } from "@/lib/utils";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { getSettings } from "@/server/settings";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","DELIVERED","CANCELED"] as const;
@@ -31,28 +33,53 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const statusCandidate = get('status');
   const status = statusCandidate && statuses.includes(statusCandidate as any) ? statusCandidate : undefined;
   const phoneRaw = get('phone')?.trim();
-  const createdFrom = get('createdFrom');
-  const createdTo = get('createdTo');
-  const priceMinStr = get('priceMin');
-  const priceMaxStr = get('priceMax');
-  const priceMin = priceMinStr ? Number(normalizeNumberInput(priceMinStr)) : undefined;
-  const priceMax = priceMaxStr ? Number(normalizeNumberInput(priceMaxStr)) : undefined;
-  const phoneNorm = phoneRaw ? normalizeNumberInput(phoneRaw) : undefined;
-  const qNorm = qRaw ? normalizeNumberInput(qRaw) : undefined;
-  const page = Number(get('page') || 1);
+  const createdFromRaw = get('createdFrom');
+  const createdToRaw = get('createdTo');
+  const priceMinRaw = get('priceMin');
+  const priceMaxRaw = get('priceMax');
+
+  const qDisplay = qRaw ? toLatinDigits(qRaw) : "";
+  const qNorm = qRaw ? normalizeNumberInput(qRaw) : "";
+  const phoneNorm = phoneRaw ? normalizeNumberInput(phoneRaw) : "";
+  const phoneDisplay = phoneRaw ? (phoneNorm || toLatinDigits(phoneRaw)) : "";
+  const createdFrom = createdFromRaw ? toLatinDigits(createdFromRaw) : "";
+  const createdTo = createdToRaw ? toLatinDigits(createdToRaw) : "";
+  const priceMinStr = priceMinRaw ? normalizeNumberInput(priceMinRaw) : "";
+  const priceMaxStr = priceMaxRaw ? normalizeNumberInput(priceMaxRaw) : "";
+  const priceMin = priceMinStr ? Number(priceMinStr) : undefined;
+  const priceMax = priceMaxStr ? Number(priceMaxStr) : undefined;
+
   const defaultTake = Number(settings.uiTableRows || 25);
-  const parsedTake = get('take') ? Number(get('take')) : defaultTake;
+  const pageRaw = get('page');
+  const parsedPage = pageRaw ? Number(normalizeNumberInput(pageRaw)) : NaN;
+  const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const takeRaw = get('take');
+  const parsedTakeCandidate = takeRaw ? Number(normalizeNumberInput(takeRaw)) : defaultTake;
+  const parsedTake = Number.isFinite(parsedTakeCandidate) && parsedTakeCandidate > 0 ? parsedTakeCandidate : defaultTake;
   const take = Math.min(parsedTake || defaultTake, 100);
 
   const where: any = {};
   if (status) where.status = status;
   if (qRaw) {
-    where.OR = [
-      { code: { contains: qRaw, mode: "insensitive" } },
-      ...(qNorm ? [{ customer: { is: { phone: { contains: qNorm } } } }] : []),
-    ];
+    const or: any[] = [];
+    const codeTerm = qDisplay || qRaw;
+    if (codeTerm) {
+      or.push({ code: { contains: codeTerm, mode: "insensitive" } });
+    }
+    if (qNorm && qNorm !== codeTerm) {
+      or.push({ code: { contains: qNorm, mode: "insensitive" } });
+    }
+    if (qNorm) {
+      or.push({ customer: { is: { phone: { contains: qNorm } } } });
+    }
+    if (or.length) where.OR = or;
   }
-  if (phoneRaw) where.customer = { is: { phone: { contains: phoneNorm || phoneRaw } } };
+  if (phoneRaw) {
+    const phoneFilter = phoneNorm || phoneDisplay;
+    if (phoneFilter) {
+      where.customer = { is: { phone: { contains: phoneFilter } } };
+    }
+  }
   if (createdFrom || createdTo) {
     where.createdAt = {} as any;
     if (createdFrom) where.createdAt.gte = new Date(createdFrom);
@@ -77,11 +104,11 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const pages = Math.max(1, Math.ceil(total / take));
   const makeQS = (overrides: Record<string, string | number | undefined>) => {
     const params = new URLSearchParams({
-      q: qRaw || "",
-      phone: phoneRaw || "",
+      q: qDisplay,
+      phone: phoneNorm,
       status: status || "",
-      createdFrom: createdFrom || "",
-      createdTo: createdTo || "",
+      createdFrom,
+      createdTo,
       priceMin: priceMinStr || "",
       priceMax: priceMaxStr || "",
       take: String(take),
@@ -98,21 +125,21 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     <div className="space-y-4">
       <h1 className="text-xl font-bold">الطلبات</h1>
       <ActionBar>
-        <input type="search" inputMode="search" name="q" defaultValue={qRaw} placeholder="بحث بالكود أو الجوال" className="input sm:col-span-2" />
-        <input type="text" inputMode="numeric" name="phone" defaultValue={phoneRaw} placeholder="رقم الجوال" className="input" />
+        <Input type="search" inputMode="search" name="q" defaultValue={qDisplay} placeholder="بحث بالكود أو الجوال" className="input sm:col-span-2" />
+        <PhoneInput name="phone" defaultValue={phoneNorm} placeholder="رقم الجوال" className="input" />
         <select name="status" defaultValue={status} className="input">
           <option value="">كل الحالات</option>
           {statuses.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
         </select>
-        <input type="date" name="createdFrom" defaultValue={createdFrom} className="input" />
-        <input type="date" name="createdTo" defaultValue={createdTo} className="input" />
-        <input type="text" inputMode="decimal" name="priceMin" defaultValue={priceMinStr} placeholder="سعر من (مثال: ١٠٠)" title="يمكن إدخال الأرقام العربية" className="input" />
-        <input type="text" inputMode="decimal" name="priceMax" defaultValue={priceMaxStr} placeholder="سعر إلى (مثال: ٢٠٠٠)" title="يمكن إدخال الأرقام العربية" className="input" />
+        <Input type="date" name="createdFrom" defaultValue={createdFrom} className="input" />
+        <Input type="date" name="createdTo" defaultValue={createdTo} className="input" />
+        <Input type="text" inputMode="decimal" name="priceMin" defaultValue={priceMinStr} placeholder="سعر من (مثال: 100)" title="يتم تحويل الأرقام تلقائيًا إلى الإنجليزية" className="input" />
+        <Input type="text" inputMode="decimal" name="priceMax" defaultValue={priceMaxStr} placeholder="سعر إلى (مثال: 2000)" title="يتم تحويل الأرقام تلقائيًا إلى الإنجليزية" className="input" />
         <div className="flex gap-2 sm:col-span-2">
           <button className="icon-ghost" title="بحث" aria-label="بحث">
             <Search size={24} />
           </button>
-          <a className="icon-ghost" title="تصدير CSV" aria-label="تصدير CSV" href={`/api/orders/export?${new URLSearchParams({ q: qRaw||"", status: status||"", phone: phoneRaw||"", createdFrom: createdFrom||"", createdTo: createdTo||"", priceMin: priceMinStr||"", priceMax: priceMaxStr||"" }).toString()}`}>
+          <a className="icon-ghost" title="تصدير CSV" aria-label="تصدير CSV" href={`/api/orders/export?${new URLSearchParams({ q: qDisplay, status: status||"", phone: phoneNorm, createdFrom, createdTo, priceMin: priceMinStr||"", priceMax: priceMaxStr||"" }).toString()}`}>
             <FileDown size={24} />
           </a>
           <a className="icon-ghost" title="إعادة تعيين" aria-label="إعادة تعيين" href="/orders">
@@ -142,9 +169,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <TBody>
             {items.map((o) => (
                 <TR key={o.id} className="orders-row rounded-xl transition-all">
-                  <TD className="font-mono"><a className="text-blue-600" href={`/track/${o.code}`}>{o.code}</a></TD>
+                  <TD className="font-mono"><a className="text-blue-600" href={`/track/${o.code}`}>{toLatinDigits(o.code)}</a></TD>
                   <TD>{o.customer.name}</TD>
-                  <TD>{o.customer.phone}</TD>
+                  <TD>{toLatinDigits(o.customer.phone)}</TD>
                 <TD>{o.service}</TD>
                 <TD><StatusBadge status={o.status as any} /></TD>
                 <TD>
@@ -154,11 +181,11 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                     const discount = Math.max(0, originalPrice - collected);
                     return (
                       <WhatsAppButton
-                        phone={o.customer.phone}
+                        phone={toLatinDigits(o.customer.phone)}
                         templateKey={orderTemplateForStatus(o.status) as any}
                         params={{
                           customerName: o.customer.name,
-                          orderCode: o.code,
+                          orderCode: toLatinDigits(o.code),
                           service: o.service,
                           collectedPrice: collected,
                           originalPrice,
@@ -179,7 +206,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                   <DeleteOrderButton orderId={o.id} />
                   {o.status !== "DELIVERED" && (<>
                     {' '}·{' '}
-                    <DeliverDialog orderId={o.id} defaultAmount={Number(o.originalPrice)} phone={o.customer.phone} customerName={o.customer.name} />
+                    <DeliverDialog orderId={o.id} defaultAmount={Number(o.originalPrice)} phone={toLatinDigits(o.customer.phone)} customerName={o.customer.name} />
                   </>)}
                 </TD>
               </TR>
@@ -190,14 +217,14 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       </div>
 
       <div className="card tonal interactive flex items-center justify-between gap-3">
-        <div className="text-sm text-gray-600">إجمالي: {total} — صفحة {page} من {pages}</div>
+        <div className="text-sm text-gray-600">إجمالي: {toLatinDigits(total)} — صفحة {toLatinDigits(page)} من {toLatinDigits(pages)}</div>
         <div className="flex items-center gap-2">
           <a className="btn-outline h-8 px-3 text-sm disabled:opacity-50" aria-disabled={page<=1} href={`/orders?${makeQS({ page: Math.max(1, page-1) })}`}>السابق</a>
           <a className="btn-outline h-8 px-3 text-sm disabled:opacity-50" aria-disabled={page>=pages} href={`/orders?${makeQS({ page: Math.min(pages, page+1) })}`}>التالي</a>
           <form className="flex items-center gap-1" action="/orders">
             {/** preserve filters */}
-            <input type="hidden" name="q" value={qRaw} />
-            <input type="hidden" name="phone" value={phoneRaw} />
+            <input type="hidden" name="q" value={qDisplay} />
+            <input type="hidden" name="phone" value={phoneNorm} />
             <input type="hidden" name="status" value={status} />
             <input type="hidden" name="createdFrom" value={createdFrom} />
             <input type="hidden" name="createdTo" value={createdTo} />

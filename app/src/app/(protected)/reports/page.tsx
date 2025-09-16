@@ -7,6 +7,7 @@ import { FileDown } from "lucide-react";
 import { ActionBar } from "@/components/ui/action-bar";
 import { Sparkline } from "@/components/ui/sparkline";
 import { formatYMD } from "@/lib/date";
+import { Input } from "@/components/ui/input";
 
 export default async function ReportsPage({ searchParams }: { searchParams: Promise<{ [k: string]: string | string[] | undefined }> }) {
   const session = await getAuthSession();
@@ -46,11 +47,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         <form className="contents">
           <div>
             <label className="block text-sm text-gray-600 mb-1">من</label>
-            <input type="date" name="from" defaultValue={fromDate.toISOString().slice(0,10)} className="input w-full" />
+            <Input type="date" name="from" defaultValue={fromDate.toISOString().slice(0,10)} className="w-full" />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">إلى</label>
-            <input type="date" name="to" defaultValue={new Date(toParam).toISOString().slice(0,10)} className="input w-full" />
+            <Input type="date" name="to" defaultValue={new Date(toParam).toISOString().slice(0,10)} className="w-full" />
           </div>
           <div className="flex items-end">
             <button className="btn-primary">تطبيق</button>

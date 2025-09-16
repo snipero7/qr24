@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { showToast } from "@/components/ui/toast";
+import { Input } from "@/components/ui/input";
 import { normalizeNumberInput } from "@/lib/utils";
 import { HandCoins, Check } from "lucide-react";
 
@@ -253,13 +254,13 @@ export function DeliverDialog({ orderId, defaultAmount, phone, customerName }: {
         <div className="mt-3">
           <div className="text-sm text-gray-600 mb-2">رسوم إضافية (اختياري)</div>
           <div className="grid grid-cols-6 gap-2">
-            <input
+            <Input
               inputMode="decimal"
               type="text"
               step="0.5"
               min="0"
-              placeholder="مثال: ٤٠٫٥"
-              title="يمكن إدخال الأرقام العربية؛ سنحوّلها تلقائيًا"
+              placeholder="مثال: 40.5"
+              title="يتم تحويل الأرقام تلقائيًا إلى الإنجليزية"
               className="input h-9 col-span-2"
               value={extraStr}
               onChange={(e)=>{
@@ -267,7 +268,7 @@ export function DeliverDialog({ orderId, defaultAmount, phone, customerName }: {
                 setExtraStr(norm);
               }}
             />
-            <input
+            <Input
               type="text"
               placeholder="سبب الرسوم (قطعة إضافية...)"
               className="input h-9 col-span-4"

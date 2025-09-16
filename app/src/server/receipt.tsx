@@ -6,6 +6,7 @@ import { storeConfig } from "@/config/notifications";
 import { statusToArabic } from "@/lib/statusLabels";
 import { getSettings } from "@/server/settings";
 import { formatYMD_HM } from "@/lib/date";
+import { toLatinDigits } from "@/lib/utils";
 
 type OrderInfo = {
   code: string;
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
 
 function formatSAR(n: number) {
   try {
-    return new Intl.NumberFormat("ar-SA", { style: "currency", currency: "SAR" }).format(n);
+    return new Intl.NumberFormat("ar-SA-u-nu-latn", { style: "currency", currency: "SAR", numberingSystem: "latn" }).format(n);
   } catch {
     return `${n.toFixed(2)} ر.س`;
   }
@@ -124,11 +125,11 @@ export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
         <View style={styles.box}>
           <View style={styles.row}>
             <Text style={styles.label}>كود الطلب{receiptLang === 'AR_EN' ? ' / Order Code' : ''}:</Text>
-            <Text>{order.code}</Text>
+            <Text>{toLatinDigits(order.code)}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>العميل{receiptLang === 'AR_EN' ? ' / Customer' : ''}:</Text>
-            <Text>{order.customer.name} ({order.customer.phone})</Text>
+            <Text>{order.customer.name} ({toLatinDigits(order.customer.phone)})</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>الخدمة{receiptLang === 'AR_EN' ? ' / Service' : ''}:</Text>
@@ -180,7 +181,7 @@ export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
         {showQr && (
           <View style={{ marginTop: 16, alignItems: "center" }}>
             <Image style={styles.qr} src={qrDataUrl} />
-            <Text>للتتبع: /track/{order.code}</Text>
+            <Text>للتتبع: /track/{toLatinDigits(order.code)}</Text>
           </View>
         )}
         {stampUrl ? (
@@ -329,7 +330,7 @@ export async function generateThermalReceiptPdf(order: OrderInfo & { paymentMeth
         <View style={styles80.table}>
           <View style={styles80.tr}>
             <View style={styles80.th}>{LabelSplit('رقم', 'No.')}</View>
-            <View style={styles80.td}><Text style={styles80.ltr}>{order.code}</Text></View>
+            <View style={styles80.td}><Text style={styles80.ltr}>{toLatinDigits(order.code)}</Text></View>
           </View>
           <View style={styles80.tr}>
             <View style={styles80.th}>{LabelSplit('الحالة', 'Status')}</View>
@@ -349,7 +350,7 @@ export async function generateThermalReceiptPdf(order: OrderInfo & { paymentMeth
           </View>
           <View style={styles80.tr}>
             <View style={styles80.th}>{LabelSplit('الجوال', 'Phone')}</View>
-            <View style={styles80.td}><Text style={styles80.ltr}>{order.customer.phone}</Text></View>
+            <View style={styles80.td}><Text style={styles80.ltr}>{toLatinDigits(order.customer.phone)}</Text></View>
           </View>
         </View>
         <View style={styles80.sep} />
@@ -378,7 +379,7 @@ export async function generateThermalReceiptPdf(order: OrderInfo & { paymentMeth
         {showQr && (
           <View style={{ alignItems: 'center' }}>
             <Image src={qrDataUrl} style={{ width: 80, height: 80 }} />
-            <Text>{receiptLang==='AR_EN' ? `تتبع / Track: /track/${order.code}` : `/track/${order.code}`}</Text>
+            <Text>{receiptLang==='AR_EN' ? `تتبع / Track: /track/${toLatinDigits(order.code)}` : `/track/${toLatinDigits(order.code)}`}</Text>
           </View>
         )}
         {receiptFooter ? (
@@ -470,14 +471,14 @@ export async function generateThermalInvoicePdfNoVat(order: OrderInfo & { paymen
         <Dash />
 
         {/* Code / Status / Date */}
-        <Row label={L('الكود', 'Code')} value={order.code} ltr={true} />
+        <Row label={L('الكود', 'Code')} value={toLatinDigits(order.code)} ltr={true} />
         <Row label={L('الحالة', 'Status')} value={(s as any)?.receiptLang==='AR_EN' ? `${statusToArabic((order as any).status || 'DELIVERED')} / ${(order as any).status || 'DELIVERED'}` : statusToArabic((order as any).status || 'DELIVERED')} />
         <Row label={L('التاريخ', 'Date')} value={formatYMD_HM(order.collectedAt)} />
 
         <Dash />
         {/* Customer */}
         <Row label={L('العميل', 'Customer')} value={order.customer.name} />
-        <Row label={L('الجوال', 'Phone')} value={order.customer.phone} ltr={true} />
+        <Row label={L('الجوال', 'Phone')} value={toLatinDigits(order.customer.phone)} ltr={true} />
 
         <Dash />
         {/* Device/IMEI/Service */}
@@ -498,7 +499,7 @@ export async function generateThermalInvoicePdfNoVat(order: OrderInfo & { paymen
         {showQr && (
           <View style={{ alignItems: 'center' }}>
             <Image src={qrDataUrl} style={{ width: 80, height: 80 }} />
-            <Text>{receiptLang==='AR_EN' ? `تتبع / Track: /track/${order.code}` : `/track/${order.code}`}</Text>
+            <Text>{receiptLang==='AR_EN' ? `تتبع / Track: /track/${toLatinDigits(order.code)}` : `/track/${toLatinDigits(order.code)}`}</Text>
           </View>
         )}
         <Dash />

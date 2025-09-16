@@ -4,6 +4,7 @@ import { STATUS_LABELS } from "@/lib/statusLabels";
 import { Save } from "lucide-react";
 import { showToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","CANCELED"] as const; // DELIVERED عبر مسار التسليم
 
@@ -48,7 +49,7 @@ export function ChangeStatusForm({ orderId, current }: { orderId: string; curren
       </div>
       <div className="flex-1">
         <label className="block text-sm text-gray-600 mb-1">ملاحظة</label>
-        <input className="input w-full h-9" value={note} onChange={(e)=>setNote(e.target.value)} placeholder="اختياري" disabled={isDelivered} />
+        <Input className="w-full h-9" value={note} onChange={(e)=>setNote(e.target.value)} placeholder="اختياري" disabled={isDelivered} />
       </div>
       <button
         disabled={loading || isDelivered}

@@ -29,15 +29,26 @@ function classNames(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
 
-export default function TopNav() {
+type TopNavProps = {
+  initialName?: string;
+  initialLogo?: string | null;
+};
+
+function normalizeLogo(src: string | undefined, fallback: string) {
+  if (!src) return fallback;
+  return src.startsWith("http") || src.startsWith("/") ? src : `/${src}`;
+}
+
+export default function TopNav({ initialName, initialLogo }: TopNavProps = {}) {
   const pathname = usePathname() || "/";
   const [open, setOpen] = useState(false);
   const envStoreName = process.env.NEXT_PUBLIC_STORE_NAME || "منصة الصيانة";
   const envLogo = process.env.NEXT_PUBLIC_STORE_LOGO as string | undefined;
-  const envLogoSrc = envLogo
-    ? (envLogo.startsWith("http") || envLogo.startsWith("/") ? envLogo : `/${envLogo}`)
-    : "/logo-placeholder.svg";
-  const [brand, setBrand] = useState<{ name: string; logo: string }>({ name: envStoreName, logo: envLogoSrc });
+  const envLogoSrc = normalizeLogo(envLogo, "/logo-placeholder.svg");
+  const [brand, setBrand] = useState<{ name: string; logo: string }>(() => ({
+    name: initialName || envStoreName,
+    logo: normalizeLogo(initialLogo ?? envLogo, envLogoSrc),
+  }));
 
   useEffect(() => {
     let mounted = true;
@@ -47,15 +58,12 @@ export default function TopNav() {
         if (!res.ok) return;
         const data = await res.json();
         const name = data?.storeName || envStoreName;
-        const logoUrl: string | undefined = data?.storeLogoUrl || envLogo;
-        const logo = logoUrl
-          ? (logoUrl.startsWith("http") || logoUrl.startsWith("/") ? logoUrl : `/${logoUrl}`)
-          : envLogoSrc;
+        const logo = normalizeLogo((data?.storeLogoUrl as string | undefined) || envLogo, envLogoSrc);
         if (mounted) setBrand({ name, logo });
       } catch { /* ignore */ }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [envStoreName, envLogoSrc, envLogo]);
 
   const items: NavItem[] = useMemo(
     () => [
@@ -126,9 +134,9 @@ export default function TopNav() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 dark:border-white/10 bg-[var(--surface)]/80 backdrop-blur supports-[backdrop-filter]:bg-[var(--surface)]/70 shadow-sm">
-      <div className="container h-14 flex items-center justify-between gap-4">
+      <div className="flex h-14 w-full items-center justify-between gap-4 px-0 sm:px-3">
         {/* Right side (brand + toggler in RTL) */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0 justify-end">
           <button
             type="button"
             aria-label="القائمة"
@@ -140,41 +148,47 @@ export default function TopNav() {
             <Menu className="w-5 h-5" />
           </button>
           <Link href="/dashboard" className="font-semibold text-sm sm:text-base inline-flex items-center gap-2">
-            <img src={brand.logo} alt={brand.name} className="w-7 h-7 rounded" />
+            <span className="inline-flex h-16 w-36 items-center justify-end overflow-hidden rounded-2xl border border-black/5 bg-white/80 px-7 dark:border-white/10 dark:bg-white/10">
+              <img
+                src={brand.logo}
+                alt={brand.name}
+                className="max-h-14 w-auto max-w-[280px] object-contain"
+              />
+            </span>
             <span>{brand.name}</span>
           </Link>
         </div>
 
-        {/* Desktop nav + actions */}
-        <div className="hidden md:flex items-center gap-2 w-full">
-          <div className="flex-1 flex justify-center">
-            <div className="inline-flex items-center rounded-2xl p-1 bg-[color:rgb(239_246_255)] dark:bg-white/10 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.03)]">
+        {/* Desktop nav */}
+        <div className="hidden md:flex flex-1 justify-center">
+          <div className="inline-flex items-center rounded-2xl p-1 bg-[color:rgb(239_246_255)] dark:bg-white/10 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.03)]">
             <nav className="flex items-center gap-1 px-1">
               {items.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.href}
-                  href={item.href}
-                  aria-current={item.isActive(pathname) ? "page" : undefined}
-                  className={classNames(
-                    linkBase,
-                    "inline-flex items-center gap-2",
-                    item.isActive(pathname) && linkActive
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </Link>
+                    href={item.href}
+                    aria-current={item.isActive(pathname) ? "page" : undefined}
+                    className={classNames(
+                      linkBase,
+                      "inline-flex items-center gap-2",
+                      item.isActive(pathname) && linkActive
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </Link>
                 );
               })}
             </nav>
-            </div>
           </div>
-          <div className="flex items-center gap-2 ms-2">
-            <ThemeToggle />
-            <UserNav />
-          </div>
+        </div>
+
+        {/* Desktop actions (left side in RTL) */}
+        <div className="hidden md:flex items-center gap-2 shrink-0">
+          <ThemeToggle />
+          <UserNav />
         </div>
 
         {/* Mobile actions (left side in RTL) */}

@@ -5,6 +5,9 @@ import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
 import { AmountPad } from "@/components/ui/amount-pad";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { debtTemplateForStatus } from "@/config/notifications";
+import { formatYMD } from "@/lib/date";
+import { toLatinDigits } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import { Pencil, Trash2, Wallet } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm";
 
@@ -50,7 +53,7 @@ export default function DebtsTree({ groups }: { groups: DebtGroup[] }) {
             onClick={() => setExpandedIdx(expandedIdx === String(idx) ? null : String(idx))}
           >
             <div>
-              <div className="card-subtitle">{g.phone || '-'}</div>
+              <div className="card-subtitle">{g.phone ? toLatinDigits(g.phone) : '-'}</div>
               <h3 className="card-title">{g.shopName}</h3>
             </div>
           </div>
@@ -72,7 +75,7 @@ export default function DebtsTree({ groups }: { groups: DebtGroup[] }) {
                   {g.debts.map((d) => (
                     <tr key={d.id} className="bg-white dark:bg-transparent hover:bg-black/5 dark:hover:bg-white/10">
                       <td className="p-2">{editing === d.id ? (
-                        <input defaultValue={d.service} className="input h-8" id={`svc-${d.id}`} />
+                        <Input defaultValue={d.service} className="input h-8" id={`svc-${d.id}`} />
                       ) : d.service}</td>
                       <td className="p-2 tabular-nums">{editing === d.id ? (
                         <AmountPad name={`amount-${d.id}`} defaultValue={d.amount} onChangeValue={(n)=>{ (window as any)[`amountVal_${d.id}`]=n; }} />
@@ -80,10 +83,10 @@ export default function DebtsTree({ groups }: { groups: DebtGroup[] }) {
                       <td className="p-2 tabular-nums">{d.paid}</td>
                       <td className="p-2 tabular-nums">{d.remaining}</td>
                       <td className="p-2"><StatusBadge status={d.status as any} /></td>
-                      <td className="p-2">{new Date(d.createdAt).toLocaleDateString()}</td>
+                      <td className="p-2">{formatYMD(d.createdAt)}</td>
                       <td className="p-2 flex items-center gap-2">
                         <WhatsAppButton
-                          phone={g.phone}
+                          phone={g.phone ? toLatinDigits(g.phone) : g.phone}
                           templateKey={debtTemplateForStatus(d.status) as any}
                           params={{ shopName: g.shopName, remaining: d.remaining, paid: d.paid, amount: d.amount, service: d.service }}
                           variant="icon"

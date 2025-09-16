@@ -4,6 +4,7 @@ import { Dialog, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { showToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
 
 export default function EditOrderDialog({ order }: { order: { id: string; service: string; deviceModel?: string | null; imei?: string | null; originalPrice: number } }) {
   const [open, setOpen] = useState(false);
@@ -35,10 +36,10 @@ export default function EditOrderDialog({ order }: { order: { id: string; servic
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogHeader title="تعديل الطلب" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <label className="text-sm">الخدمة<input className="input h-9" value={service} onChange={e=>setService(e.target.value)} /></label>
-          <label className="text-sm">الجهاز<input className="input h-9" value={deviceModel} onChange={e=>setDeviceModel(e.target.value)} /></label>
-          <label className="text-sm">IMEI<input className="input h-9" value={imei} onChange={e=>setImei(e.target.value)} /></label>
-          <label className="text-sm">السعر الأساسي<input className="input h-9" value={price} onChange={e=>setPrice(e.target.value)} /></label>
+          <label className="text-sm">الخدمة<Input className="input h-9" value={service} onChange={e=>setService(e.target.value)} /></label>
+          <label className="text-sm">الجهاز<Input className="input h-9" value={deviceModel} onChange={e=>setDeviceModel(e.target.value)} /></label>
+          <label className="text-sm">IMEI<Input className="input h-9" value={imei} onChange={e=>setImei(e.target.value)} /></label>
+          <label className="text-sm">السعر الأساسي<Input className="input h-9" value={price} onChange={e=>setPrice(e.target.value)} /></label>
         </div>
         <div className="flex justify-end gap-2 mt-4">
           <Button variant="outline" onClick={()=>setOpen(false)}>إلغاء</Button>
@@ -48,4 +49,3 @@ export default function EditOrderDialog({ order }: { order: { id: string; servic
     </>
   );
 }
-

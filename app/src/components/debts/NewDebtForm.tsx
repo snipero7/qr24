@@ -1,7 +1,10 @@
 "use client";
 import { useRef, useState } from "react";
 import { AmountPad } from "@/components/ui/amount-pad";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { FileDown, PlusCircle } from "lucide-react";
+import { normalizeNumberInput, toLatinDigits } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export type ShopRef = { shopName: string; phone?: string | null };
 
@@ -26,7 +29,7 @@ export default function NewDebtForm({ shops, action }: { shops: ShopRef[]; actio
     const s = shops[idx];
     if (s) {
       setName(s.shopName);
-      setPhone(s.phone || "");
+      setPhone(normalizeNumberInput(s.phone || ""));
     }
   }
 
@@ -57,12 +60,12 @@ export default function NewDebtForm({ shops, action }: { shops: ShopRef[]; actio
         >
           <option value="">— اختر —</option>
           {shops.map((s, i) => (
-            <option key={`${s.shopName}-${s.phone ?? ''}`} value={i}>{s.shopName}{s.phone ? ` (${s.phone})` : ''}</option>
+            <option key={`${s.shopName}-${s.phone ?? ''}`} value={i}>{s.shopName}{s.phone ? ` (${toLatinDigits(s.phone)})` : ''}</option>
           ))}
         </select>
       </div>
 
-      <input
+      <Input
         name="shopName"
         required
         placeholder="اسم المحل"
@@ -70,14 +73,14 @@ export default function NewDebtForm({ shops, action }: { shops: ShopRef[]; actio
         value={name}
         onChange={(e)=>setName(e.target.value)}
       />
-      <input
+      <PhoneInput
         name="phone"
         placeholder="جوال المحل"
         className="input bg-white shadow-sm"
         value={phone}
         onChange={(e)=>setPhone(e.target.value)}
       />
-      <input
+      <Input
         name="service"
         required
         placeholder="الخدمة"
@@ -91,7 +94,7 @@ export default function NewDebtForm({ shops, action }: { shops: ShopRef[]; actio
           className="rounded-xl p-2 bg-white shadow-sm border border-black/10 dark:border-white/10"
         />
       </div>
-      <input name="notes" placeholder="ملاحظات" className="input bg-white shadow-sm" />
+      <Input name="notes" placeholder="ملاحظات" className="input bg-white shadow-sm" />
       <div className="flex items-center gap-2">
         <button
           type="submit"

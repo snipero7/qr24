@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Save, Store, MessageSquare, FileText, MonitorCog, Database, Shield, ImagePlus } from "lucide-react";
 import { DataTab } from "@/components/settings/DataTab";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -106,7 +107,12 @@ export default function SettingsPage() {
           {tab === 'store' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <L label="اسم المتجر"><Input value={s.storeName||''} onChange={e=>setS({...s, storeName: e.target.value})}/></L>
-              <L label="رقم التواصل"><Input value={s.storePhone||''} onChange={e=>setS({...s, storePhone: e.target.value})}/></L>
+              <L label="رقم التواصل">
+                <PhoneInput
+                  value={s.storePhone || ''}
+                  onChange={(e) => setS({ ...s, storePhone: e.target.value })}
+                />
+              </L>
               <L label="العنوان"><Input value={s.storeAddress||''} onChange={e=>setS({...s, storeAddress: e.target.value})}/></L>
               <L label="شعار المتجر (URL)">
                 <div className="flex items-center gap-2">

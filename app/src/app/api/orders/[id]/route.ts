@@ -2,11 +2,13 @@ import { prisma } from "@/server/db";
 import { requireAuth } from "@/server/auth";
 import { errorResponse } from "@/server/validation";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+type RouteParams = Promise<{ id: string }>;
+
+export async function PATCH(req: Request, ctx: { params: RouteParams }) {
   try {
     const auth = await requireAuth(["ADMIN","CLERK"]);
     if (!auth.ok) return errorResponse("UNAUTHORIZED", auth.message);
-    const id = params.id;
+    const { id } = await ctx.params;
     const body = await req.json();
     const data: any = {};
     if (typeof body.deviceModel === 'string' || body.deviceModel === null) data.deviceModel = body.deviceModel || null;
@@ -24,11 +26,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, ctx: { params: RouteParams }) {
   try {
     const auth = await requireAuth(["ADMIN"]);
     if (!auth.ok) return errorResponse("UNAUTHORIZED", auth.message);
-    const id = params.id;
+    const { id } = await ctx.params;
     await prisma.$transaction(async (tx) => {
       await tx.orderStatusLog.deleteMany({ where: { orderId: id } });
       await tx.order.delete({ where: { id } });
@@ -38,4 +40,3 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     return errorResponse("SERVER_ERROR", e?.message || "خطأ");
   }
 }
-

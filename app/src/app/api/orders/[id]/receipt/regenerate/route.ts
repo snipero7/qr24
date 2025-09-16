@@ -26,7 +26,6 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
       code: order.code,
       service: order.service,
       deviceModel: order.deviceModel || undefined,
-      status: order.status,
       collectedPrice,
       collectedAt,
       originalPrice: Number(order.originalPrice || 0),
