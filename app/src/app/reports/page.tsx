@@ -8,13 +8,17 @@ import { ActionBar } from "@/components/ui/action-bar";
 import { Sparkline } from "@/components/ui/sparkline";
 import { formatYMD } from "@/lib/date";
 
-export default async function ReportsPage({ searchParams }: { searchParams: { from?: string; to?: string } }) {
+export default async function ReportsPage({ searchParams }: { searchParams: Promise<{ [k: string]: string | string[] | undefined }> }) {
   const session = await getAuthSession();
   if (!session || (session.user as any).role === "TECH") redirect("/signin");
 
   // نطاق التاريخ
-  const toParam = searchParams.to ? new Date(searchParams.to) : new Date();
-  const fromParam = searchParams.from ? new Date(searchParams.from) : new Date(Date.now() - 29*24*3600*1000);
+  const sp: any = await searchParams;
+  const get = (k: string) => { const v = sp?.[k]; return Array.isArray(v) ? v[0] : v; };
+  const toStr = get('to');
+  const fromStr = get('from');
+  const toParam = toStr ? new Date(toStr) : new Date();
+  const fromParam = fromStr ? new Date(fromStr) : new Date(Date.now() - 29*24*3600*1000);
   const toDate = new Date(toParam); toDate.setHours(23,59,59,999);
   const fromDate = new Date(fromParam); fromDate.setHours(0,0,0,0);
 

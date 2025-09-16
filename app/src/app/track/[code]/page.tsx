@@ -3,9 +3,12 @@ import { verifySignature } from "@/server/qr";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatYMD_HM } from "@/lib/date";
 
-export default async function TrackPage({ params, searchParams }: { params: { code: string }, searchParams: { t?: string } }) {
-  const code = params.code;
-  const t = typeof searchParams.t === "string" ? searchParams.t : undefined;
+export default async function TrackPage({ params, searchParams }: { params: Promise<{ code: string }>, searchParams: Promise<{ [k: string]: string | string[] | undefined }> }) {
+  const p: any = await params;
+  const sp: any = await searchParams;
+  const code: string | undefined = p?.code ?? p?.params?.code;
+  const rawT = sp?.t;
+  const t = typeof (Array.isArray(rawT) ? rawT[0] : rawT) === "string" ? (Array.isArray(rawT)? rawT[0]: rawT) : undefined;
   const order = await prisma.order.findUnique({ where: { code }, select: { code: true, status: true, deviceModel: true, updatedAt: true } });
 
   if (!order) {

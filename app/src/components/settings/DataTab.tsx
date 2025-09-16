@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Database, CloudUpload, Link as LinkIcon, Unlink } from "lucide-react";
+import { Database, CloudUpload, Link as LinkIcon, Unlink, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm";
 
 export function DataTab() {
   const [busy, setBusy] = useState(false);
@@ -9,6 +10,9 @@ export function DataTab() {
   const [autoEnabled, setAutoEnabled] = useState(false);
   const [weekday, setWeekday] = useState(6);
   const [hour, setHour] = useState(3);
+  const [gConnected, setGConnected] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function load() {
     try {
@@ -23,6 +27,7 @@ export function DataTab() {
         setAutoEnabled(!!s.backupAutoEnabled);
         setWeekday(Number(s.backupWeekday ?? 6));
         setHour(Number(s.backupHour ?? 3));
+        setGConnected(!!s.gdriveAccessToken);
       }
     } catch (e: any) {
       setError(e.message);
@@ -133,6 +138,7 @@ export function DataTab() {
               <th className="p-2">الملف</th>
               <th className="p-2">الحالة</th>
               <th className="p-2">رابط</th>
+              <th className="p-2">إجراء</th>
             </tr>
           </thead>
           <tbody>
@@ -148,11 +154,40 @@ export function DataTab() {
                 ) : (
                   "-"
                 )}</td>
+                <td className="p-2 flex items-center gap-2">
+                  <button className="btn-outline h-7 px-2 text-xs" title="استعادة" onClick={async ()=>{ try { const res = await fetch(`/api/backup/restore?id=${r.id}`, { method: 'POST' }); const data = await res.json().catch(()=>({})); if (!res.ok) throw new Error(data?.message || 'فشل الاستعادة'); } catch (e:any) { setError(e.message||'فشل الاستعادة'); } }}>
+                    استعادة
+                  </button>
+                  <button className="icon-ghost text-red-600" title="حذف" onClick={() => setConfirmOpen(r.id)}>
+                    <Trash2 size={18} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <ConfirmDialog
+        open={!!confirmOpen}
+        onOpenChange={(o)=>{ if(!o) setConfirmOpen(null); }}
+        title="حذف النسخة الاحتياطية"
+        message="سيتم حذف السجل وربما الملف المحلي إن وجد. لا يمكن التراجع."
+        confirmText={deleting ? 'جارٍ...' : 'حذف'}
+        cancelText="إلغاء"
+        loading={deleting}
+        onConfirm={async ()=>{
+          if (!confirmOpen) return;
+          try {
+            setDeleting(true);
+            const res = await fetch(`/api/backup/logs?id=${confirmOpen}`, { method: 'DELETE' });
+            const data = await res.json().catch(()=>({}));
+            if (!res.ok) throw new Error(data?.message || 'فشل الحذف');
+            setConfirmOpen(null);
+            load();
+          } catch (e:any) { setError(e.message || 'فشل الحذف'); }
+          setDeleting(false);
+        }}
+      />
     </div>
   );
 }

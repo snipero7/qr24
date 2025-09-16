@@ -3,6 +3,7 @@ import { Document, Page, Text, View, StyleSheet, Image, renderToBuffer, Font } f
 import fs from "node:fs";
 import path from "node:path";
 import { storeConfig } from "@/config/notifications";
+import { statusToArabic } from "@/lib/statusLabels";
 import { getSettings } from "@/server/settings";
 import { formatYMD_HM } from "@/lib/date";
 
@@ -23,6 +24,8 @@ let chosenFont: string | null = null;
 function ensureArabicFont(): string | null {
   if (fontChecked) return chosenFont;
   try {
+    // Prevent hyphenation/splitting for Arabic words on all PDFs
+    try { Font.registerHyphenationCallback((word) => [word]); } catch {}
     const fontsDir = path.join(process.cwd(), "public", "fonts");
     // Try Cairo
     const cairoRegular = path.join(fontsDir, "Cairo-Regular.ttf");
@@ -100,6 +103,9 @@ export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
   const receiptLang = (s?.receiptLang as any) || "AR"; // "AR" | "AR_EN"
   const stampUrl = s?.receiptStampUrl || undefined;
   const font = ensureArabicFont();
+  if (!font) {
+    try { console.warn('[receipt] Arabic font not found in public/fonts. Arabic text may render incorrectly.'); } catch {}
+  }
   const hasLogo = !!process.env.NEXT_PUBLIC_STORE_LOGO;
   const logoPath = process.env.NEXT_PUBLIC_STORE_LOGO
     ? path.isAbsolute(process.env.NEXT_PUBLIC_STORE_LOGO)
@@ -194,4 +200,317 @@ export async function generateReceiptPdf(order: OrderInfo, qrDataUrl: string) {
 
   const buffer = await renderToBuffer(doc);
   return buffer;
+}
+
+// Thermal 80mm receipt (approx width 80mm => ~226.77pt)
+export async function generateThermalReceiptPdf(order: OrderInfo & { paymentMethod?: 'CASH'|'TRANSFER' }, qrDataUrl: string) {
+  const s = await getSettings();
+  const storeName = s?.storeName || storeConfig.storeName;
+  const storeAddress = s?.storeAddress || storeConfig.storeAddress;
+  const storePhone = (s as any)?.storePhone || '';
+  const receiptFooter = s?.receiptFooter || '';
+  const showQr = s?.receiptQrEnabled !== false;
+  const stampUrl = s?.receiptStampUrl || undefined;
+  const font = ensureArabicFont();
+  const receiptLang = (s as any)?.receiptLang || 'AR'; // 'AR' | 'AR_EN'
+
+  // Resolve store logo from settings or env (local path or URL)
+  let logoPath: string | undefined;
+  // Use only Settings.storeLogoUrl as requested
+  const configuredLogo = (s as any)?.storeLogoUrl;
+  if (configuredLogo && typeof configuredLogo === 'string') {
+    // Resolve: http(s) stays URL; anything else is treated as web-root relative under public/
+    let tentative: string;
+    if (/^https?:\/\//i.test(configuredLogo)) {
+      tentative = configuredLogo;
+    } else {
+      const rel = configuredLogo.replace(/^\//, '');
+      tentative = path.join(process.cwd(), 'public', rel);
+    }
+    // @react-pdf supports PNG/JPG; skip SVG to avoid silent failure
+    const ext = path.extname((tentative || '').split('?')[0]).toLowerCase();
+    const supported = [ '.png', '.jpg', '.jpeg' ];
+    if (!ext || supported.includes(ext) || /^https?:\/\//i.test(tentative)) {
+      logoPath = tentative;
+    } else {
+      try { console.warn('[receipt] storeLogoUrl not a supported image type for PDF:', tentative); } catch {}
+    }
+  }
+
+  // Prepare logo source: use HTTP URL directly, or read local file into Buffer
+  let logoSrc: string | Uint8Array | undefined;
+  if (logoPath) {
+    if (/^https?:\/\//i.test(logoPath)) {
+      logoSrc = logoPath;
+    } else {
+      try {
+        if (fs.existsSync(logoPath)) {
+          logoSrc = fs.readFileSync(logoPath);
+        } else {
+          try { console.warn('[receipt] logo file not found at path:', logoPath); } catch {}
+        }
+      } catch {}
+    }
+  }
+
+  const W = 226.77; // 80mm
+  const H = 800; // enough for short receipt
+  const styles80 = StyleSheet.create({
+    page: { padding: 10, fontSize: 9, direction: 'rtl' as any },
+    center: { textAlign: 'center' as any, alignItems: 'center' as any },
+    row: { flexDirection: 'row-reverse' as any, justifyContent: 'space-between', marginBottom: 4 },
+    labelBlock: { alignItems: 'flex-end' as any },
+    inline: { flexDirection: 'row-reverse' as any, alignItems: 'center' },
+    ltr: { direction: 'ltr' as any, textAlign: 'left' as any },
+    sep: { marginVertical: 4, borderBottomWidth: 1, borderBottomColor: '#ddd' },
+    // Table-like grid
+    table: { marginTop: 2 },
+    tr: { flexDirection: 'row-reverse' as any, alignItems: 'center', paddingVertical: 3, borderBottomWidth: 1, borderBottomColor: '#eee' },
+    th: { width: '46%' as any, paddingRight: 4, alignItems: 'flex-end' as any },
+    td: { width: '54%' as any, alignItems: 'flex-start' as any },
+  });
+
+  const sarSymbol = (font ? ' ﷼' : ' ر.س');
+  function sar(n: number) { return `${Number(n).toFixed(2)}${sarSymbol}`; }
+  // Bilingual helpers: Arabic right, English left
+  function LabelSplit(ar: string, en: string) {
+    if (receiptLang !== 'AR_EN') return <Text>{ar}</Text>;
+    return (
+      <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', width: '100%' as any }}>
+        <Text>{ar}</Text>
+        <Text style={{ fontSize: 7, direction: 'ltr' as any, textAlign: 'left' as any, color: '#666' }}>{en}</Text>
+      </View>
+    );
+  }
+  function ValueSplit(ar: string, en: string) {
+    if (receiptLang !== 'AR_EN') return <Text>{ar}</Text>;
+    return (
+      <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', width: '100%' as any }}>
+        <Text>{ar}</Text>
+        <Text style={{ direction: 'ltr' as any, textAlign: 'left' as any }}>{en}</Text>
+      </View>
+    );
+  }
+  function L(ar: string, en: string) { return receiptLang === 'AR_EN' ? `${ar} / ${en}` : ar; }
+  function paymentLabel(m?: 'CASH'|'TRANSFER') {
+    if (!m) return '';
+    if (m === 'CASH') return receiptLang === 'AR_EN' ? 'نقدًا / Cash' : 'نقدًا';
+    return receiptLang === 'AR_EN' ? 'تحويل / Transfer' : 'تحويل';
+  }
+  // (Reverted) No special embedding — rely on font and RTL page direction
+  const base = typeof order.originalPrice === 'number' ? Number(order.originalPrice||0) : 0;
+  const extra = typeof (order as any).extraCharge === 'number' ? Number((order as any).extraCharge||0) : 0;
+  const effective = Math.max(0, base + extra);
+  const pm = ((order as any).paymentMethod as ('CASH'|'TRANSFER'|undefined|null)) ?? 'CASH';
+
+  const doc = (
+    <Document>
+      <Page size={[W, H]} style={{ ...styles80.page, ...(font ? { fontFamily: font } : {}) }} wrap>
+        <View style={styles80.center}>
+          {logoSrc ? <Image src={logoSrc as any} style={{ width: 120, objectFit: 'contain', marginBottom: 4, alignSelf: 'center' as any }} /> : null}
+          {stampUrl ? <Image src={stampUrl} style={{ width: 60, height: 60, marginBottom: 3, alignSelf: 'center' as any }} /> : null}
+          <Text style={{ fontSize: 12, fontWeight: 700 }}>{storeName}</Text>
+          {storePhone ? (
+            <View style={{ width: '100%' as any, flexDirection: 'row-reverse' as any, justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ width: '46%' as any, alignItems: 'flex-end' as any }}>{LabelSplit('جوال', 'Phone')}</View>
+              <View style={{ width: '54%' as any, alignItems: 'flex-start' as any }}>
+                <Text style={{ direction: 'ltr' as any }}>{storePhone}</Text>
+              </View>
+            </View>
+          ) : null}
+          {storeAddress ? <Text>{storeAddress}</Text> : null}
+        </View>
+        <View style={styles80.sep} />
+        {/* Collected date/time on a single centered line */}
+        <View style={{ alignItems: 'center', marginBottom: 4 }}>
+          <Text>{formatYMD_HM(order.collectedAt)}</Text>
+        </View>
+        {/* Meta table: رقم / الحالة / العميل / الجوال (single-line rows) */}
+        <View style={styles80.table}>
+          <View style={styles80.tr}>
+            <View style={styles80.th}>{LabelSplit('رقم', 'No.')}</View>
+            <View style={styles80.td}><Text style={styles80.ltr}>{order.code}</Text></View>
+          </View>
+          <View style={styles80.tr}>
+            <View style={styles80.th}>{LabelSplit('الحالة', 'Status')}</View>
+            <View style={styles80.td}>
+              <Text>
+                {(() => {
+                  const raw = ((order as any).status as string | undefined) || 'DELIVERED';
+                  const ar = statusToArabic(raw);
+                  return (s as any)?.receiptLang === 'AR_EN' ? `${ar} / ${raw}` : ar;
+                })()}
+              </Text>
+            </View>
+          </View>
+          <View style={styles80.tr}>
+            <View style={styles80.th}>{LabelSplit('العميل', 'Customer')}</View>
+            <View style={styles80.td}><Text>{order.customer.name}</Text></View>
+          </View>
+          <View style={styles80.tr}>
+            <View style={styles80.th}>{LabelSplit('الجوال', 'Phone')}</View>
+            <View style={styles80.td}><Text style={styles80.ltr}>{order.customer.phone}</Text></View>
+          </View>
+        </View>
+        <View style={styles80.sep} />
+        {/* Details table — single-line rows */}
+        <View style={styles80.table}>
+          <View style={styles80.tr}><View style={styles80.th}>{LabelSplit('الخدمة', 'Service')}</View><View style={styles80.td}><Text>{order.service}</Text></View></View>
+          {order.deviceModel ? <View style={styles80.tr}><View style={styles80.th}>{LabelSplit('الجهاز', 'Device')}</View><View style={styles80.td}><Text>{order.deviceModel}</Text></View></View> : null}
+          {(order as any).imei ? <View style={styles80.tr}><View style={styles80.th}>{LabelSplit('IMEI', 'IMEI')}</View><View style={styles80.td}><Text style={styles80.ltr}>{(order as any).imei}</Text></View></View> : null}
+          <View style={styles80.tr}><View style={styles80.th}>{LabelSplit('السعر الأصلي', 'Base Price')}</View><View style={styles80.td}><Text>{sar(base)}</Text></View></View>
+          {extra>0 ? <View style={styles80.tr}><View style={styles80.th}>{LabelSplit('إضافات', 'Extra')}</View><View style={styles80.td}><Text>{sar(extra)}</Text></View></View> : null}
+          <View style={styles80.tr}><View style={styles80.th}>{LabelSplit('الإجمالي قبل الخصم', 'Total before Disc.')}</View><View style={styles80.td}><Text>{sar(effective)}</Text></View></View>
+          <View style={styles80.tr}><View style={styles80.th}>{LabelSplit('المبلغ المدفوع', 'Amount Paid')}</View><View style={styles80.td}><Text>{sar(order.collectedPrice)}</Text></View></View>
+          <View style={styles80.tr}>
+            <View style={styles80.th}>{LabelSplit('وسيلة الدفع', 'Payment')}</View>
+            <View style={styles80.td}>
+              {(() => {
+                const m = (order as any).paymentMethod as ('CASH'|'TRANSFER'|undefined|null);
+                if (!m) return <Text>—</Text>;
+                if (receiptLang === 'AR_EN') return ValueSplit(m === 'CASH' ? 'نقدًا' : 'تحويل', m === 'CASH' ? 'Cash' : 'Transfer');
+                return <Text>{m === 'CASH' ? 'نقدًا' : 'تحويل'}</Text>;
+              })()}
+            </View>
+          </View>
+        </View>
+        <View style={styles80.sep} />
+        {showQr && (
+          <View style={{ alignItems: 'center' }}>
+            <Image src={qrDataUrl} style={{ width: 80, height: 80 }} />
+            <Text>{receiptLang==='AR_EN' ? `تتبع / Track: /track/${order.code}` : `/track/${order.code}`}</Text>
+          </View>
+        )}
+        {receiptFooter ? (
+          <View style={{ marginTop: 8 }}>
+            <Text style={{ textAlign: 'center', fontSize: 9 }}>{receiptFooter}</Text>
+          </View>
+        ) : null}
+      </Page>
+    </Document>
+  );
+  return await renderToBuffer(doc);
+}
+
+// Thermal 80mm — Invoice-like layout without VAT fields
+export async function generateThermalInvoicePdfNoVat(order: OrderInfo & { paymentMethod?: 'CASH'|'TRANSFER' }, qrDataUrl: string) {
+  const s = await getSettings();
+  const storeName = s?.storeName || storeConfig.storeName;
+  const storeAddress = s?.storeAddress || storeConfig.storeAddress;
+  const storePhone = (s as any)?.storePhone || '';
+  const receiptFooter = s?.receiptFooter || '';
+  const showQr = s?.receiptQrEnabled !== false;
+  const stampUrl = s?.receiptStampUrl || undefined;
+  const font = ensureArabicFont();
+  const receiptLang = (s as any)?.receiptLang || 'AR';
+
+  // Resolve logo as earlier
+  let logoSrc: string | Uint8Array | undefined;
+  try {
+    const configuredLogo = (s as any)?.storeLogoUrl;
+    if (configuredLogo && typeof configuredLogo === 'string') {
+      if (/^https?:\/\//i.test(configuredLogo)) {
+        logoSrc = configuredLogo;
+      } else {
+        const rel = configuredLogo.replace(/^\//, '');
+        const p = path.join(process.cwd(), 'public', rel);
+        if (fs.existsSync(p)) logoSrc = fs.readFileSync(p);
+      }
+    }
+  } catch {}
+
+  const W = 226.77; // 80mm
+  const H = 800;
+  const styles80 = StyleSheet.create({
+    page: { padding: 10, fontSize: 9, direction: 'rtl' as any },
+    center: { textAlign: 'center' as any, alignItems: 'center' as any },
+    sep: { marginVertical: 4, borderBottomWidth: 1, borderBottomColor: '#ddd' },
+    row: { flexDirection: 'row-reverse' as any, justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 },
+    small: { fontSize: 8, color: '#555' },
+    tblHeader: { flexDirection: 'row-reverse' as any, borderBottomWidth: 1, borderBottomColor: '#000', paddingVertical: 3, marginTop: 2 },
+    tblRow: { flexDirection: 'row-reverse' as any, paddingVertical: 3, borderBottomWidth: 1, borderBottomColor: '#eee' },
+    cDesc: { width: '44%' as any },
+    cQty: { width: '12%' as any, textAlign: 'center' as any },
+    cPrice: { width: '20%' as any, textAlign: 'left' as any },
+    cTotal: { width: '24%' as any, textAlign: 'left' as any },
+    ltr: { direction: 'ltr' as any, textAlign: 'left' as any },
+  });
+
+  const sarSymbol = (font ? ' ﷼' : ' ر.س');
+  const sar = (n: number) => `${Number(n).toFixed(2)}${sarSymbol}`;
+  const L = (ar: string, en: string) => (receiptLang === 'AR_EN' ? `${ar} / ${en}` : ar);
+
+  const base = typeof order.originalPrice === 'number' ? Number(order.originalPrice || 0) : 0;
+  const extra = typeof (order as any).extraCharge === 'number' ? Number((order as any).extraCharge || 0) : 0;
+  const effective = Math.max(0, base + extra);
+  const discount = Math.max(0, effective - Number(order.collectedPrice || 0));
+  const pm2 = ((order as any).paymentMethod as ('CASH'|'TRANSFER'|undefined|null)) ?? 'CASH';
+
+  const Dash = () => (<Text style={{ textAlign: 'center', marginVertical: 4 }}>--------------------------</Text>);
+  const Row = ({ label, value, ltr=false }: { label: string; value: string | number; ltr?: boolean }) => (
+    <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+      <Text>{label}</Text>
+      <Text style={ltr?styles80.ltr:undefined as any}>{typeof value==='number'?sar(Number(value)):String(value)}</Text>
+    </View>
+  );
+
+  const doc = (
+    <Document>
+      <Page size={[W, H]} style={{ ...styles80.page, ...(font ? { fontFamily: font } : {}) }} wrap>
+        {/* Header */}
+        <View style={styles80.center}>
+          {logoSrc ? <Image src={logoSrc as any} style={{ width: 120, objectFit: 'contain', marginBottom: 4 }} /> : null}
+          <Text style={{ fontSize: 12, fontWeight: 700 }}>{storeName}</Text>
+          {storeAddress ? <Text>{storeAddress}</Text> : null}
+          {storePhone ? <Text>{L('جوال', 'Phone')}: {storePhone}</Text> : null}
+        </View>
+
+        <Dash />
+        <Text style={{ textAlign: 'center', fontSize: 12, fontWeight: 700 }}>{L('فاتورة مختصرة', 'Receipt')}</Text>
+        <Dash />
+
+        {/* Code / Status / Date */}
+        <Row label={L('الكود', 'Code')} value={order.code} ltr={true} />
+        <Row label={L('الحالة', 'Status')} value={(s as any)?.receiptLang==='AR_EN' ? `${statusToArabic((order as any).status || 'DELIVERED')} / ${(order as any).status || 'DELIVERED'}` : statusToArabic((order as any).status || 'DELIVERED')} />
+        <Row label={L('التاريخ', 'Date')} value={formatYMD_HM(order.collectedAt)} />
+
+        <Dash />
+        {/* Customer */}
+        <Row label={L('العميل', 'Customer')} value={order.customer.name} />
+        <Row label={L('الجوال', 'Phone')} value={order.customer.phone} ltr={true} />
+
+        <Dash />
+        {/* Device/IMEI/Service */}
+        {order.deviceModel ? <Row label={L('الجهاز', 'Device')} value={order.deviceModel} /> : null}
+        {(order as any).imei ? <Row label={'IMEI'} value={(order as any).imei} ltr={true} /> : null}
+        <Row label={L('الخدمة', 'Service')} value={order.service} />
+
+        <Dash />
+        {/* Pricing */}
+        <Row label={L('السعر الأساسي', 'Base Price')} value={base} />
+        <Row label={L('الإجمالي قبل الخصم', 'Total before Discount')} value={effective} />
+        <Row label={L('الخصم', 'Discount')} value={`-${sar(discount)}`} />
+        <Row label={L('المبلغ بعد الخصم', 'Amount Due')} value={Number(order.collectedPrice || 0)} />
+        <Row label={L('وسيلة الدفع', 'Payment')} value={pm2 === 'CASH' ? (receiptLang==='AR_EN' ? 'Cash / نقدًا' : 'نقدًا') : (receiptLang==='AR_EN' ? 'Transfer / تحويل' : 'تحويل')} />
+
+        <Dash />
+        {/* QR */}
+        {showQr && (
+          <View style={{ alignItems: 'center' }}>
+            <Image src={qrDataUrl} style={{ width: 80, height: 80 }} />
+            <Text>{receiptLang==='AR_EN' ? `تتبع / Track: /track/${order.code}` : `/track/${order.code}`}</Text>
+          </View>
+        )}
+        <Dash />
+        {/* Footer */}
+        <Text style={{ textAlign: 'center' }}>* {L('نشكركم على ثقتكم بنا', 'Thank you for your trust')} *</Text>
+        {receiptFooter ? (
+          <View style={{ marginTop: 6 }}>
+            <Text style={{ textAlign: 'center', fontSize: 9 }}>{receiptFooter}</Text>
+          </View>
+        ) : null}
+      </Page>
+    </Document>
+  );
+  return await renderToBuffer(doc);
 }

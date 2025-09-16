@@ -6,6 +6,8 @@ import { QuickStatus } from "@/components/orders/QuickStatus";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Search, FileDown, RotateCcw } from "lucide-react";
+import EditOrderDialog from "@/components/orders/EditOrderDialog";
+import DeleteOrderButton from "@/components/orders/DeleteOrderButton";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { orderTemplateForStatus } from "@/config/notifications";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -16,24 +18,30 @@ import { getSettings } from "@/server/settings";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","DELIVERED","CANCELED"] as const;
 
-export default async function OrdersPage({ searchParams }: { searchParams: { q?: string; status?: string; phone?: string; createdFrom?: string; createdTo?: string; priceMin?: string; priceMax?: string; page?: string; take?: string } }) {
+export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ [k: string]: string | string[] | undefined }> }) {
   const session = await getAuthSession();
   if (!session) redirect("/signin");
   const settings = await getSettings();
-  const qRaw = searchParams.q?.trim();
-  const status = searchParams.status && statuses.includes(searchParams.status as any) ? searchParams.status : undefined;
-  const phoneRaw = searchParams.phone?.trim();
-  const createdFrom = searchParams.createdFrom;
-  const createdTo = searchParams.createdTo;
-  const priceMinStr = searchParams.priceMin;
-  const priceMaxStr = searchParams.priceMax;
+  const sp: any = await searchParams;
+  const get = (k: string) => {
+    const v = sp?.[k];
+    return Array.isArray(v) ? v[0] : v;
+  };
+  const qRaw = get('q')?.trim();
+  const statusCandidate = get('status');
+  const status = statusCandidate && statuses.includes(statusCandidate as any) ? statusCandidate : undefined;
+  const phoneRaw = get('phone')?.trim();
+  const createdFrom = get('createdFrom');
+  const createdTo = get('createdTo');
+  const priceMinStr = get('priceMin');
+  const priceMaxStr = get('priceMax');
   const priceMin = priceMinStr ? Number(normalizeNumberInput(priceMinStr)) : undefined;
   const priceMax = priceMaxStr ? Number(normalizeNumberInput(priceMaxStr)) : undefined;
   const phoneNorm = phoneRaw ? normalizeNumberInput(phoneRaw) : undefined;
   const qNorm = qRaw ? normalizeNumberInput(qRaw) : undefined;
-  const page = Number(searchParams.page || 1);
+  const page = Number(get('page') || 1);
   const defaultTake = Number(settings.uiTableRows || 25);
-  const parsedTake = searchParams.take ? Number(searchParams.take) : defaultTake;
+  const parsedTake = get('take') ? Number(get('take')) : defaultTake;
   const take = Math.min(parsedTake || defaultTake, 100);
 
   const where: any = {};
@@ -163,7 +171,17 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
                   })()}
                 </TD>
                 <TD><QuickStatus orderId={o.id} current={o.status} /></TD>
-                <TD><a className="text-blue-600" href={`/orders/${o.id}`}>تفاصيل</a>{o.status !== "DELIVERED" && (<> · <DeliverDialog orderId={o.id} defaultAmount={Number(o.originalPrice)} phone={o.customer.phone} customerName={o.customer.name} /></>)}</TD>
+                <TD>
+                  <a className="text-blue-600" href={`/orders/${o.id}`}>تفاصيل</a>
+                  {' '}·{' '}
+                  <EditOrderDialog order={{ id: o.id, service: o.service, deviceModel: (o as any).deviceModel || undefined, imei: (o as any).imei || undefined, originalPrice: Number(o.originalPrice) }} />
+                  {' '}·{' '}
+                  <DeleteOrderButton orderId={o.id} />
+                  {o.status !== "DELIVERED" && (<>
+                    {' '}·{' '}
+                    <DeliverDialog orderId={o.id} defaultAmount={Number(o.originalPrice)} phone={o.customer.phone} customerName={o.customer.name} />
+                  </>)}
+                </TD>
               </TR>
             ))}
           </TBody>
