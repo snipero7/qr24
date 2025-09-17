@@ -9,6 +9,11 @@ export async function PATCH(req: Request, ctx: { params: RouteParams }) {
     const auth = await requireAuth(["ADMIN","CLERK"]);
     if (!auth.ok) return errorResponse("UNAUTHORIZED", auth.message);
     const { id } = await ctx.params;
+    const existing = await prisma.order.findUnique({ where: { id }, select: { status: true, collectedPrice: true } });
+    if (!existing) return errorResponse("NOT_FOUND", "الطلب غير موجود");
+    if (existing.status === "DELIVERED" || existing.collectedPrice !== null) {
+      return errorResponse("LOCKED", "تم تحصيل مبلغ الطلب ولا يمكن تعديله");
+    }
     const body = await req.json();
     const data: any = {};
     if (typeof body.deviceModel === 'string' || body.deviceModel === null) data.deviceModel = body.deviceModel || null;

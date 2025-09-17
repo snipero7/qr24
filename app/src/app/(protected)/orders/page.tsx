@@ -201,8 +201,12 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                 <TD>
                   <a className="text-blue-600" href={`/orders/${o.id}`}>تفاصيل</a>
                   {' '}·{' '}
-                  <EditOrderDialog order={{ id: o.id, service: o.service, deviceModel: (o as any).deviceModel || undefined, imei: (o as any).imei || undefined, originalPrice: Number(o.originalPrice) }} />
-                  {' '}·{' '}
+                  {(!(o.collectedPrice) && o.status !== "DELIVERED") ? (
+                    <>
+                      <EditOrderDialog order={{ id: o.id, service: o.service, deviceModel: (o as any).deviceModel || undefined, imei: (o as any).imei || undefined, originalPrice: Number(o.originalPrice) }} />
+                      {' '}·{' '}
+                    </>
+                  ) : null}
                   <DeleteOrderButton orderId={o.id} />
                   {o.status !== "DELIVERED" && (<>
                     {' '}·{' '}

@@ -122,7 +122,9 @@ export default async function OrderShow({ params }: { params: Promise<{ id: stri
 
       <div className="flex gap-4 items-center">
         <ChangeStatusForm orderId={o.id} current={o.status} />
-        <EditOrderDialog order={{ id: o.id, service: o.service, deviceModel: o.deviceModel || undefined, imei: o.imei || undefined, originalPrice: Number(o.originalPrice) }} />
+        {(!(o.collectedPrice) && o.status !== "DELIVERED") ? (
+          <EditOrderDialog order={{ id: o.id, service: o.service, deviceModel: o.deviceModel || undefined, imei: o.imei || undefined, originalPrice: Number(o.originalPrice) }} />
+        ) : null}
         {isAdmin && <DeleteOrderButton orderId={o.id} />}
         {o.status !== "DELIVERED" && <DeliverDialog orderId={o.id} defaultAmount={Number(o.originalPrice)} phone={toLatinDigits(o.customer.phone)} customerName={o.customer.name} />}
         {(() => {
