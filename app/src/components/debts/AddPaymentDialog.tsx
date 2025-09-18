@@ -49,6 +49,7 @@ export function AddPaymentDialog({ debtId, variant = "text", onOpenChange }: Pro
           type="button"
           onClick={()=>toggle(true)}
           title="سداد"
+          aria-label="سداد"
           className="icon-ghost"
         >
           <Wallet className="w-5 h-5 text-[var(--color-primary)] dark:text-[var(--color-primary)]" />

@@ -5,9 +5,8 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { debtTemplateForStatus } from "@/config/notifications";
 import { toLatinDigits } from "@/lib/utils";
 import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
-import { ConfirmDialog } from "@/components/ui/confirm";
 import { Pencil, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export function DebtActions({
   debt,
@@ -28,8 +27,6 @@ export function DebtActions({
   onSave: (service: string | undefined, amount: number | undefined) => Promise<void>;
   onDelete: () => void;
 }) {
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
   const isPaid = debt.status === "PAID";
   const isEditing = editingId === debt.id;
 
@@ -83,6 +80,7 @@ export function DebtActions({
           {!isPaid && (
             <button
               title="تعديل"
+              aria-label="تعديل"
               className="icon-ghost"
               onClick={(e) => {
                 e.stopPropagation();
@@ -94,30 +92,17 @@ export function DebtActions({
           )}
           <button
             title="حذف"
+            aria-label="حذف"
             className="icon-ghost text-red-600"
             onClick={(e) => {
               e.stopPropagation();
-              setConfirmOpen(true);
+              onDelete();
             }}
           >
             <Trash2 className="w-5 h-5" />
           </button>
         </>
       )}
-      <ConfirmDialog
-        open={confirmOpen}
-        onOpenChange={(o) => {
-          setConfirmOpen(o);
-        }}
-        title="حذف الدين"
-        message="سيتم حذف الدين وجميع الدفعات المرتبطة به. لا يمكن التراجع."
-        confirmText="حذف"
-        cancelText="إلغاء"
-        onConfirm={() => {
-          setConfirmOpen(false);
-          onDelete();
-        }}
-      />
     </div>
   );
 }

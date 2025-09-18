@@ -29,7 +29,7 @@ function UploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
     }
   }
   return (
-    <label className="icon-ghost cursor-pointer" title="رفع">
+    <label className="icon-ghost cursor-pointer" title="رفع" aria-label="رفع">
       <ImagePlus size={20} />
       <input type="file" accept="image/png,image/jpeg,image/svg+xml" className="hidden" onChange={onChange} />
     </label>
@@ -81,7 +81,7 @@ export default function SettingsPage() {
       <div className="card tonal p-0">
         <div className="card-header">
           <div className="flex items-center gap-2 settings-tabs">
-            <button className={`icon-ghost inline-flex items-center gap-1 ${tab==='store'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('store')} title="المتجر">
+            <button className={`icon-ghost inline-flex items-center gap-1 ${tab==='store'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('store')} title="المتجر" aria-label="المتجر">
               <Store size={24}/><span className="text-sm">المتجر</span>
             </button>
             <button className={`icon-ghost inline-flex items-center gap-1 ${tab==='notify'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('notify')} title="الرسائل">
@@ -100,7 +100,7 @@ export default function SettingsPage() {
               <Shield size={24}/><span className="text-sm">متقدم</span>
             </button>
           </div>
-          <button className="icon-ghost" onClick={()=>save({})} title="حفظ الكل" aria-label="حفظ"><Save size={24}/></button>
+          <button className="icon-ghost" onClick={()=>save({})} title="حفظ الكل" aria-label="حفظ الكل"><Save size={24}/></button>
         </div>
 
         <div className="card-section">
@@ -120,7 +120,7 @@ export default function SettingsPage() {
                   <UploadButton onUploaded={(url)=>{ setS({...s, storeLogoUrl: url}); save({ storeLogoUrl: url }); }} />
                 </div>
               </L>
-              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ storeName: s.storeName, storePhone: s.storePhone, storeAddress: s.storeAddress, storeLogoUrl: s.storeLogoUrl })} disabled={saving} className="icon-ghost"><Save size={24}/></Button></div>
+              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ storeName: s.storeName, storePhone: s.storePhone, storeAddress: s.storeAddress, storeLogoUrl: s.storeLogoUrl })} disabled={saving} className="icon-ghost" aria-label="حفظ معلومات المتجر"><Save size={24}/></Button></div>
             </div>
           )}
 
@@ -131,7 +131,7 @@ export default function SettingsPage() {
               <L label="debt.reminder"><Textarea rows={4} value={s.waTemplates?.["debt.reminder"]||''} onChange={e=>setS({...s, waTemplates: { ...(s.waTemplates||{}), ["debt.reminder"]: e.target.value }})}/></L>
               <L label="تفعيل أزرار واتساب"><Select value={(s.waEnabled?'1':'0')} onChange={e=>setS({...s, waEnabled: e.target.value==='1'})}><option value="1">مفعّل</option><option value="0">معطّل</option></Select></L>
               <L label="أيام تذكير الدين"><Input type="number" value={s.debtReminderDays||7} onChange={e=>setS({...s, debtReminderDays: Number(e.target.value)})}/></L>
-              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ waTemplates: s.waTemplates, waEnabled: s.waEnabled, debtReminderDays: s.debtReminderDays })} disabled={saving} className="icon-ghost"><Save size={24}/></Button></div>
+              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ waTemplates: s.waTemplates, waEnabled: s.waEnabled, debtReminderDays: s.debtReminderDays })} disabled={saving} className="icon-ghost" aria-label="حفظ إعدادات الرسائل"><Save size={24}/></Button></div>
             </div>
           )}
 
@@ -146,7 +146,7 @@ export default function SettingsPage() {
                   <UploadButton onUploaded={(url)=>{ setS({...s, receiptStampUrl: url}); save({ receiptStampUrl: url }); }} />
                 </div>
               </L>
-              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ receiptFooter: s.receiptFooter, receiptLang: s.receiptLang, receiptQrEnabled: s.receiptQrEnabled, receiptStampUrl: s.receiptStampUrl })} disabled={saving} className="icon-ghost"><Save size={24}/></Button></div>
+              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ receiptFooter: s.receiptFooter, receiptLang: s.receiptLang, receiptQrEnabled: s.receiptQrEnabled, receiptStampUrl: s.receiptStampUrl })} disabled={saving} className="icon-ghost" aria-label="حفظ إعدادات الإيصال"><Save size={24}/></Button></div>
             </div>
           )}
 
@@ -154,7 +154,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <L label="الوضع الافتراضي"><Select value={s.uiTheme||'light'} onChange={e=>setS({...s, uiTheme: e.target.value})}><option value="light">فاتح</option><option value="dark">داكن</option></Select></L>
               <L label="صفوف الجداول"><Select value={String(s.uiTableRows||25)} onChange={e=>setS({...s, uiTableRows: Number(e.target.value)})}><option value="10">10</option><option value="25">25</option><option value="50">50</option></Select></L>
-              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ uiTheme: s.uiTheme, uiTableRows: s.uiTableRows })} disabled={saving} className="icon-ghost"><Save size={24}/></Button></div>
+              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ uiTheme: s.uiTheme, uiTableRows: s.uiTableRows })} disabled={saving} className="icon-ghost" aria-label="حفظ إعدادات الواجهة"><Save size={24}/></Button></div>
             </div>
           )}
 
@@ -167,7 +167,7 @@ export default function SettingsPage() {
               <L label="S3 Access Key"><Input type="password" value={s.s3AccessKey||''} onChange={e=>setS({...s, s3AccessKey: e.target.value})}/></L>
               <L label="S3 Secret"><Input type="password" value={s.s3Secret||''} onChange={e=>setS({...s, s3Secret: e.target.value})}/></L>
               <L label="Redis URL"><Input value={s.redisUrl||''} onChange={e=>setS({...s, redisUrl: e.target.value})}/></L>
-              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ s3Endpoint: s.s3Endpoint, s3Bucket: s.s3Bucket, s3AccessKey: s.s3AccessKey, s3Secret: s.s3Secret, redisUrl: s.redisUrl })} className="icon-ghost"><Save size={24}/></Button></div>
+              <div className="sm:col-span-2 flex justify-end"><Button onClick={()=>save({ s3Endpoint: s.s3Endpoint, s3Bucket: s.s3Bucket, s3AccessKey: s.s3AccessKey, s3Secret: s.s3Secret, redisUrl: s.redisUrl })} className="icon-ghost" aria-label="حفظ الإعدادات المتقدمة"><Save size={24}/></Button></div>
             </div>
           )}
         </div>

@@ -173,8 +173,22 @@ a { @apply text-[var(--color-primary)] hover:text-[var(--color-primary-700)]; }
 .action-bar .input { @apply shadow-sm; }
 
 /* Standard size for icon-only buttons */
-.icon-btn { @apply h-14 w-14 sm:h-12 sm:w-12 p-0 inline-flex items-center justify-center; }
-.icon-ghost { @apply h-14 w-14 sm:h-12 sm:w-12 p-0 inline-flex items-center justify-center bg-transparent border-0 outline-none text-[var(--color-primary)] hover:text-[var(--color-primary-700)]; }
+.icon-btn { @apply inline-flex items-center justify-center h-12 w-12 sm:h-10 sm:w-10 p-0; }
+.icon-ghost {
+  @apply inline-flex items-center gap-2 rounded-lg px-3 py-1.5 bg-transparent border border-transparent outline-none text-[var(--color-primary)] hover:text-[var(--color-primary-700)] transition-all;
+}
+[dir="rtl"] .icon-ghost { flex-direction: row-reverse; }
+.icon-ghost::after {
+  content: attr(aria-label);
+  font-size: 0.75rem;
+  color: currentColor;
+}
+[dir="rtl"] .icon-ghost::after {
+  margin-inline-end: 0.25rem;
+}
+[dir="ltr"] .icon-ghost::after {
+  margin-inline-start: 0.25rem;
+}
 .icon-ghost-text { @apply inline-flex items-center gap-2 px-3 h-12 sm:h-10 bg-transparent border-0 outline-none text-[var(--color-primary)] hover:text-[var(--color-primary-700)] rounded-xl; }
 .icon-ghost svg, .icon-ghost-text svg { width: 24px !important; height: 24px !important; }
 .settings-tabs .icon-ghost-text svg { width: 26px !important; height: 26px !important; stroke-width: 1.75 !important; }
