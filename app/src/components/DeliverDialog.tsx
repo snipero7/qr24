@@ -186,6 +186,7 @@ export function DeliverDialog({ orderId, defaultAmount, phone, customerName }: {
         className="icon-ghost"
         title="تسليم"
         aria-label="تسليم"
+        data-label="تسليم"
         onClick={() => setOpen(true)}
       >
         <HandCoins size={24} />
@@ -323,6 +324,7 @@ export function DeliverDialog({ orderId, defaultAmount, phone, customerName }: {
             className="icon-ghost"
             title={`تأكيد (${amount.toFixed(2)} ر.س)`}
             aria-label={`تأكيد (${amount.toFixed(2)} ر.س)`}
+            data-label="تأكيد"
             onClick={submit}
           >
             <Check size={24} />

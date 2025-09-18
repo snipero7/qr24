@@ -45,6 +45,7 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
       <button
         type="button"
         className="icon-ghost h-8 w-8"
+        data-label="تعديل"
         onClick={() => {
           resetForm();
           setOpen(true);

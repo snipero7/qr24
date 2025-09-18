@@ -32,7 +32,7 @@ export default function EditOrderDialog({ order }: { order: { id: string; servic
 
   return (
     <>
-      <button className="icon-ghost" title="تعديل" aria-label="تعديل" onClick={()=>setOpen(true)}>✏️</button>
+      <button className="icon-ghost" title="تعديل" aria-label="تعديل" data-label="تعديل" onClick={()=>setOpen(true)}>✏️</button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogHeader title="تعديل الطلب" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

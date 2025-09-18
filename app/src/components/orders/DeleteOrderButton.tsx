@@ -36,6 +36,7 @@ export default function DeleteOrderButton({ orderId }: { orderId: string }) {
         className="icon-ghost text-red-600"
         title="حذف"
         aria-label="حذف"
+        data-label="حذف"
         onClick={() => setOpen(true)}
       >
         <Trash2 size={20} />

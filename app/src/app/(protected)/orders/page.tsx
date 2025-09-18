@@ -136,7 +136,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         <Input type="text" inputMode="decimal" name="priceMin" defaultValue={priceMinStr} placeholder="سعر من (مثال: 100)" title="يتم تحويل الأرقام تلقائيًا إلى الإنجليزية" className="input" />
         <Input type="text" inputMode="decimal" name="priceMax" defaultValue={priceMaxStr} placeholder="سعر إلى (مثال: 2000)" title="يتم تحويل الأرقام تلقائيًا إلى الإنجليزية" className="input" />
         <div className="flex gap-2 sm:col-span-2">
-          <button className="icon-ghost" title="بحث" aria-label="بحث">
+          <button className="icon-ghost" title="بحث" aria-label="بحث" data-label="بحث">
             <Search size={24} />
           </button>
           {(() => {
@@ -155,16 +155,16 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
             const excelHref = `/api/orders/export?${excelParams.toString()}`;
             return (
               <>
-                <a className="icon-ghost" title="تصدير CSV" aria-label="تصدير CSV" href={csvHref}>
+                <a className="icon-ghost" title="تصدير CSV" aria-label="تصدير CSV" data-label="تصدير CSV" href={csvHref}>
                   <FileDown size={24} />
                 </a>
-                <a className="icon-ghost" title="تصدير Excel" aria-label="تصدير Excel" href={excelHref}>
+                <a className="icon-ghost" title="تصدير Excel" aria-label="تصدير Excel" data-label="تصدير Excel" href={excelHref}>
                   <FileSpreadsheet size={24} />
                 </a>
               </>
             );
           })()}
-          <a className="icon-ghost" title="إعادة تعيين" aria-label="إعادة تعيين" href="/orders">
+          <a className="icon-ghost" title="إعادة تعيين" aria-label="إعادة تعيين" data-label="إعادة" href="/orders">
             <RotateCcw size={24} />
           </a>
         </div>

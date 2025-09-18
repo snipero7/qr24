@@ -56,6 +56,7 @@ export function ChangeStatusForm({ orderId, current }: { orderId: string; curren
         className="icon-ghost disabled:opacity-50"
         title={isDelivered ? 'تم التسليم' : 'حفظ'}
         aria-label={isDelivered ? 'تم التسليم' : 'حفظ'}
+        data-label={isDelivered ? 'تم التسليم' : 'حفظ'}
       >
         <Save size={24} />
       </button>

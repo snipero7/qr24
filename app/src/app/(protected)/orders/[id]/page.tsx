@@ -86,6 +86,7 @@ export default async function OrderShow({ params }: { params: Promise<{ id: stri
                     className="icon-ghost"
                     title="تنزيل PDF"
                     aria-label="تنزيل PDF"
+                    data-label="تنزيل"
                     href={downloadUrl}
                     target="_blank"
                   >
@@ -110,6 +111,7 @@ export default async function OrderShow({ params }: { params: Promise<{ id: stri
               className="icon-ghost"
               title="طباعة HTML"
               aria-label="طباعة HTML"
+              data-label="طباعة"
               href={`/orders/${o.id}/receipt`}
               target="_blank"
             >

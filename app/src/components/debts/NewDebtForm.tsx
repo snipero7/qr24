@@ -44,6 +44,7 @@ export default function NewDebtForm({ shops, action }: { shops: ShopRef[]; actio
           href="/api/debts/export"
           title="تصدير الديون"
           aria-label="تصدير الديون"
+          data-label="تصدير"
           className="icon-ghost"
         >
           <FileSpreadsheet size={24} />
@@ -100,6 +101,7 @@ export default function NewDebtForm({ shops, action }: { shops: ShopRef[]; actio
           type="submit"
           title="إضافة دين"
           aria-label="إضافة دين"
+          data-label="إضافة"
           className="icon-ghost"
         >
           <PlusCircle className="w-5 h-5 text-[var(--color-primary)] dark:text-[var(--color-primary)]" />

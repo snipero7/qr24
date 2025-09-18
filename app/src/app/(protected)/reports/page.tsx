@@ -61,6 +61,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
               className="icon-ghost"
               title="تصدير CSV"
               aria-label="تصدير CSV"
+              data-label="تصدير"
               href={`/api/reports/orders-by-day.csv?from=${fromDate.toISOString().slice(0,10)}&to=${toDate.toISOString().slice(0,10)}`}
             >
               <FileDown size={24} />

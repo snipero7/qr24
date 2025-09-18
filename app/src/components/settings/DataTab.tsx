@@ -72,13 +72,13 @@ export function DataTab() {
     <div className="space-y-4">
       {error && <div className="text-red-600 text-sm">{error}</div>}
       <div className="flex items-center gap-2">
-        <a className="icon-ghost" title="تصدير الطلبات" aria-label="تصدير الطلبات" href="/api/orders/export">
+        <a className="icon-ghost" title="تصدير الطلبات" aria-label="تصدير الطلبات" data-label="تصدير الطلبات" href="/api/orders/export">
           <Database size={24} />
         </a>
-        <a className="icon-ghost" title="تصدير الديون" aria-label="تصدير الديون" href="/api/debts/export">
+        <a className="icon-ghost" title="تصدير الديون" aria-label="تصدير الديون" data-label="تصدير الديون" href="/api/debts/export">
           <Database size={24} />
         </a>
-        <button className="icon-ghost" onClick={backupNow} disabled={busy} title="إنشاء نسخة احتياطية الآن" aria-label="إنشاء نسخة احتياطية الآن">
+        <button className="icon-ghost" onClick={backupNow} disabled={busy} title="إنشاء نسخة احتياطية الآن" aria-label="إنشاء نسخة احتياطية الآن" data-label="نسخة احتياطية">
           <CloudUpload size={24} />
         </button>
         {(() => {
@@ -88,9 +88,9 @@ export function DataTab() {
               <span></span>
               {/* Connect / Disconnect Google Drive */}
               {!gConnected ? (
-                <a className="icon-ghost" href="/api/gdrive/oauth/start" title="ربط Google Drive" aria-label="ربط Google Drive"><LinkIcon size={24} /></a>
+                <a className="icon-ghost" href="/api/gdrive/oauth/start" title="ربط Google Drive" aria-label="ربط Google Drive" data-label="ربط Drive"><LinkIcon size={24} /></a>
               ) : (
-                <button className="icon-ghost" onClick={async ()=>{ try { const r=await fetch('/api/gdrive/oauth/disconnect',{method:'POST'}); const d=await r.json(); if(!r.ok) throw new Error(d?.message||'فشل'); setGConnected(false);} catch{} }} title="فصل Google Drive" aria-label="فصل Google Drive"><Unlink size={24}/></button>
+                <button className="icon-ghost" onClick={async ()=>{ try { const r=await fetch('/api/gdrive/oauth/disconnect',{method:'POST'}); const d=await r.json(); if(!r.ok) throw new Error(d?.message||'فشل'); setGConnected(false);} catch{} }} title="فصل Google Drive" aria-label="فصل Google Drive" data-label="فصل Drive"><Unlink size={24}/></button>
               )}
             </>
           );
@@ -126,7 +126,7 @@ export function DataTab() {
             </select>
           </div>
           <div className="flex justify-end">
-            <button className="icon-ghost" onClick={saveSchedule} title="حفظ الإعدادات" aria-label="حفظ الإعدادات">حفظ</button>
+            <button className="icon-ghost" onClick={saveSchedule} title="حفظ الإعدادات" aria-label="حفظ الإعدادات" data-label="حفظ">حفظ</button>
           </div>
         </div>
       </div>

@@ -24,6 +24,7 @@ export default function DeleteUserButton({ user }: DeleteUserButtonProps) {
       <button
         type="button"
         className="icon-ghost h-8 w-8 text-red-600 hover:text-red-700"
+        data-label="حذف"
         onClick={() => setOpen(true)}
         title="حذف"
         aria-label="حذف المستخدم"

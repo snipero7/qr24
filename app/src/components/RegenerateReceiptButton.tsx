@@ -36,6 +36,7 @@ export function RegenerateReceiptButton({ orderId }: { orderId: string }) {
       className="icon-ghost"
       title="إعادة توليد الإيصال"
       aria-label="إعادة توليد الإيصال"
+      data-label="إعادة توليد الإيصال"
       onClick={regen}
       disabled={loading}
     >

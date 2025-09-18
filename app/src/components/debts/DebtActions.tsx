@@ -81,6 +81,7 @@ export function DebtActions({
             <button
               title="تعديل"
               aria-label="تعديل"
+              data-label="تعديل"
               className="icon-ghost"
               onClick={(e) => {
                 e.stopPropagation();
@@ -93,6 +94,7 @@ export function DebtActions({
           <button
             title="حذف"
             aria-label="حذف"
+            data-label="حذف"
             className="icon-ghost text-red-600"
             onClick={(e) => {
               e.stopPropagation();
