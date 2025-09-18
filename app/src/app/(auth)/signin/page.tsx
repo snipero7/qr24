@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { PasswordInput } from "@/components/ui/password-input";
 import { showToast } from "@/components/ui/toast";
 import { Input } from "@/components/ui/input";
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
+import { ShieldCheck, LineChart, Clock4 } from "lucide-react";
 
 declare global {
   interface Window {
@@ -176,31 +177,41 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#e0f2fe,#f8fafc_60%)] dark:bg-gradient-to-br dark:from-slate-900 dark:to-slate-950 flex flex-col lg:flex-row">
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12">
-        <div className="max-w-md w-full space-y-6 text-right">
-          <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/70 dark:bg-white/5 shadow-lg">
-            <span className="text-3xl">🔧</span>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-300">منصة إدارة خدمات الصيانة</p>
-              <p className="font-semibold text-lg text-slate-800 dark:text-white">{friendlyStoreName}</p>
+    <div className="min-h-screen bg-white flex flex-col lg:flex-row">
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center px-14 py-16">
+        <div className="max-w-xl w-full space-y-8 text-right">
+          <div className="space-y-3">
+            <div className="flex items-center justify-end gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl">🔧</div>
+              <div>
+                <p className="text-sm text-slate-500">منصة إدارة خدمات الصيانة</p>
+                <p className="text-2xl font-semibold text-slate-900">{friendlyStoreName}</p>
+              </div>
             </div>
+            <span className="inline-block text-xs text-slate-400 tracking-[0.35em] uppercase">Welcome Back</span>
           </div>
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-slate-800 dark:text-white">مرحبًا بعودتك</h2>
-            <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              سجّل دخولك لمتابعة الطلبات، تحديث الحالات، وإرسال الإشعارات للعملاء بسهولة. بيانات الدخول متاحة للمسؤولين والفنيين المخوّلين فقط.
-            </p>
-            <div className="grid grid-cols-2 gap-3 text-sm text-slate-600 dark:text-slate-300">
-              <div className="rounded-xl bg-white/60 dark:bg-white/10 p-3 shadow-sm">
-                <p className="font-semibold">لوحة تحكم فورية</p>
-                <p>اطلع على الطلبات والديون والتسليمات لحظة بلحظة.</p>
-              </div>
-              <div className="rounded-xl bg-white/60 dark:bg-white/10 p-3 shadow-sm">
-                <p className="font-semibold">سجل آمن</p>
-                <p>يتم حفظ كل حركة وتوثيقها لحماية عملك وبيانات عملائك.</p>
-              </div>
-            </div>
+          <h2 className="text-3xl font-bold text-slate-900 leading-snug">
+            إدارة متكاملة لطلبات الصيانة من نقطة استقبال الجهاز وحتى التسليم.
+          </h2>
+          <p className="text-slate-600 leading-relaxed text-base">
+            تابع مؤشرات الأداء، تواصل مع عملائك، وأدر فريقك من واجهة واحدة. يتم تحديث البيانات لحظيًا لضمان شفافية سير العمل.
+          </p>
+          <div className="space-y-3">
+            <FeatureCard
+              icon={<LineChart className="h-5 w-5 text-blue-600" />}
+              title="لوحة تحكم ثرية"
+              description="مؤشرات لحظية للطلبات والديون وحجوزات التسليم لدعم قراراتك اليومية."
+            />
+            <FeatureCard
+              icon={<ShieldCheck className="h-5 w-5 text-emerald-600" />}
+              title="أمان البيانات"
+              description="صلاحيات دقيقة لكل مستخدم وسجل كامل للحركات لتوثيق العمليات."
+            />
+            <FeatureCard
+              icon={<Clock4 className="h-5 w-5 text-amber-600" />}
+              title="تنبيهات ذكية"
+              description="تنبيهات عند تأخر الطلبات وإشعارات تسليم فورية عبر الواتساب والبريد."
+            />
           </div>
         </div>
       </div>
@@ -257,6 +268,20 @@ export default function SignInPage() {
             </p>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function FeatureCard({ icon, title, description }: { icon: ReactNode; title: string; description: string }) {
+  return (
+    <div className="flex flex-row-reverse items-start gap-3 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 shadow-sm">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100">
+        {icon}
+      </div>
+      <div className="space-y-1 text-right">
+        <p className="font-semibold text-slate-800 text-sm">{title}</p>
+        <p className="text-xs text-slate-500 leading-relaxed">{description}</p>
       </div>
     </div>
   );
