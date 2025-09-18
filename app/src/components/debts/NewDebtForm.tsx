@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { AmountPad } from "@/components/ui/amount-pad";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { FileDown, PlusCircle } from "lucide-react";
+import { FileSpreadsheet, PlusCircle } from "lucide-react";
 import { normalizeNumberInput, toLatinDigits } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
@@ -42,11 +42,11 @@ export default function NewDebtForm({ shops, action }: { shops: ShopRef[]; actio
         </div>
         <a
           href="/api/debts/export"
-          title="تصدير CSV"
-          aria-label="تصدير CSV"
+          title="تصدير الديون"
+          aria-label="تصدير الديون"
           className="icon-ghost"
         >
-          <FileDown size={24} />
+          <FileSpreadsheet size={24} />
           <span className="sr-only">تصدير</span>
         </a>
       </div>

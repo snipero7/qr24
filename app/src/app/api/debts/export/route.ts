@@ -53,7 +53,17 @@ export async function GET(req: Request) {
     return true;
   });
 
-  const columns = ["id","shopName","phone","service","amount","paid","remaining","status","createdAt"];
+  const columns = [
+    { key: "id", label: "المعرف" },
+    { key: "shopName", label: "الجهة" },
+    { key: "phone", label: "الهاتف" },
+    { key: "service", label: "الخدمة" },
+    { key: "amount", label: "المبلغ الإجمالي" },
+    { key: "paid", label: "المدفوع" },
+    { key: "remaining", label: "المتبقي" },
+    { key: "status", label: "الحالة" },
+    { key: "createdAt", label: "تاريخ الإنشاء" },
+  ];
 
   if (format === "excel") {
     const html = toExcelHtml(rows, columns);

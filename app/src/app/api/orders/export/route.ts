@@ -54,7 +54,18 @@ export async function GET(req: Request) {
   }));
 
   const columns = [
-    "id","code","status","customer","phone","service","deviceModel","originalPrice","collectedPrice","createdAt","updatedAt","collectedAt",
+    { key: "id", label: "المعرف" },
+    { key: "code", label: "الكود" },
+    { key: "status", label: "الحالة" },
+    { key: "customer", label: "العميل" },
+    { key: "phone", label: "الجوال" },
+    { key: "service", label: "الخدمة" },
+    { key: "deviceModel", label: "الجهاز" },
+    { key: "originalPrice", label: "السعر الأساسي" },
+    { key: "collectedPrice", label: "المبلغ المحصّل" },
+    { key: "createdAt", label: "تاريخ الإنشاء" },
+    { key: "updatedAt", label: "آخر تحديث" },
+    { key: "collectedAt", label: "تاريخ التحصيل" },
   ];
 
   if (format === "excel") {
