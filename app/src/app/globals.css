@@ -67,7 +67,8 @@ h1 { @apply text-2xl font-bold; }
 h2 { @apply text-lg font-semibold; }
 .container { @apply mx-auto max-w-7xl p-6; }
 .card { @apply rounded-2xl border border-black/10 dark:border-white/10 bg-[var(--surface)] p-6 shadow-sm transition-shadow duration-200; }
-.card.interactive { @apply hover:shadow-md hover:border-black/15 dark:hover:border-white/20; }
+.card.interactive { @apply hover:shadow-lg hover:border-black/15 dark:hover:border-white/20 transition-transform; transform: translateY(0); }
+.card.interactive:hover { transform: translateY(-4px); }
 .card.tonal, .card-tonal { 
   /* Subtle primary-tinted surface */
   background: color-mix(in oklab, var(--surface) 94%, var(--color-primary) 6%);
