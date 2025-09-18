@@ -187,6 +187,9 @@ a { @apply text-[var(--color-primary)] hover:text-[var(--color-primary-700)]; }
   color: currentColor;
   pointer-events: none;
 }
+.icon-ghost.no-label::after {
+  content: none;
+}
 [dir="rtl"] .icon-ghost[data-label]::after {
   margin-inline-end: 0.25rem;
 }
