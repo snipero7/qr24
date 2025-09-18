@@ -17,11 +17,11 @@ export function UserNav() {
           </span>
           <button
             onClick={() => signOut({ callbackUrl: "/signin" })}
-            className="icon-ghost no-label h-10 w-10 text-[var(--color-primary)] dark:text-[var(--color-primary)]"
+            className="icon-ghost no-label h-12 w-12 text-[var(--color-primary)] dark:text-[var(--color-primary)]"
             title="تسجيل الخروج"
             aria-label="تسجيل الخروج"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-6 h-6" />
           </button>
         </div>
       ) : (

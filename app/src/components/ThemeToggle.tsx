@@ -53,9 +53,9 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={theme === "dark" ? "تبديل إلى الوضع الفاتح" : "تبديل إلى الوضع الداكن"}
       title={theme === "dark" ? "وضع فاتح" : "وضع داكن"}
-      className="icon-ghost no-label h-10 w-10"
+      className="icon-ghost no-label h-12 w-12"
     >
-      {theme === "dark" ? <Sun size={22} /> : <Moon size={22} />}
+      {theme === "dark" ? <Sun size={24} /> : <Moon size={24} />}
     </button>
   );
 }

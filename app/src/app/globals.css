@@ -193,7 +193,8 @@ a { @apply text-[var(--color-primary)] hover:text-[var(--color-primary-700)]; }
 .icon-ghost.no-label {
   gap: 0;
   padding-inline: 0.75rem;
-  min-width: 2.5rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
   justify-content: center;
 }
 [dir="rtl"] .icon-ghost[data-label]::after {
