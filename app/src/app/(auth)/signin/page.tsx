@@ -278,8 +278,10 @@ export default function SignInPage() {
 
 function FeatureCard({ icon, title, description, delayClass }: { icon: ReactNode; title: string; description: string; delayClass?: string }) {
   return (
-    <div className={`flex flex-row-reverse items-start gap-3 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 shadow-sm animate-fade-up animation-fill-both ${delayClass ?? ""}`}>
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100">
+    <div
+      className={`group flex flex-row-reverse items-start gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-blue-200 animate-fade-up animation-fill-both ${delayClass ?? ""}`}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 transition-colors duration-200 group-hover:bg-blue-50">
         {icon}
       </div>
       <div className="space-y-1 text-right">
