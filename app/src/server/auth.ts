@@ -3,8 +3,108 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaClient } from "@/generated/prisma";
 import { compare } from "bcrypt";
 import { getServerSession } from "next-auth";
+import { getRedis } from "./redis";
+
+type AttemptState = { attempts: number; lockedUntil?: number };
+
+const MAX_ATTEMPTS = Number(process.env.LOGIN_MAX_ATTEMPTS ?? 5);
+const LOCK_MINUTES = Number(process.env.LOGIN_LOCK_MINUTES ?? 15);
+const LOCK_TTL_SECONDS = Math.max(LOCK_MINUTES, 1) * 60;
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY;
 
 const prisma = new PrismaClient();
+
+function getHeader(req: unknown, key: string) {
+  try {
+    const headers = (req as any)?.headers;
+    if (headers?.get) return headers.get(key) as string | null;
+    if (typeof headers === "object" && headers) {
+      const value = headers[key] ?? headers[key.toLowerCase()];
+      return Array.isArray(value) ? value[0] : value ?? null;
+    }
+  } catch {}
+  return null;
+}
+
+function extractIdentifiers(email: string | undefined, req: unknown) {
+  const identifiers: string[] = [];
+  const xfwd = getHeader(req, "x-forwarded-for");
+  const xReal = getHeader(req, "x-real-ip");
+  const ipCandidate = xfwd?.split(",").map((part: string) => part.trim()).filter(Boolean)[0] || xReal || undefined;
+  if (email) identifiers.push(`email:${email}`);
+  if (ipCandidate) identifiers.push(`ip:${ipCandidate}`);
+  return { identifiers, ip: ipCandidate };
+}
+
+async function readState(redis: any, identifier: string): Promise<AttemptState> {
+  const key = `auth:attempts:${identifier}`;
+  const raw = await redis.get(key);
+  if (!raw) return { attempts: 0 };
+  try {
+    const parsed = JSON.parse(raw) as AttemptState;
+    return { attempts: Number(parsed.attempts || 0), lockedUntil: parsed.lockedUntil ?? undefined };
+  } catch {
+    return { attempts: 0 };
+  }
+}
+
+async function saveState(redis: any, identifier: string, state: AttemptState) {
+  const key = `auth:attempts:${identifier}`;
+  await redis.set(key, JSON.stringify(state), "EX", LOCK_TTL_SECONDS);
+}
+
+async function clearState(redis: any, identifiers: string[]) {
+  if (!identifiers.length) return;
+  await redis.del(...identifiers.map((id) => `auth:attempts:${id}`));
+}
+
+async function checkLocked(redis: any, identifiers: string[]) {
+  const now = Date.now();
+  for (const id of identifiers) {
+    const { lockedUntil } = await readState(redis, id);
+    if (lockedUntil && lockedUntil > now) {
+      return { locked: true as const, until: lockedUntil };
+    }
+  }
+  return { locked: false as const };
+}
+
+async function recordFailure(redis: any, identifiers: string[]) {
+  if (!identifiers.length || MAX_ATTEMPTS <= 0) return { locked: false as const };
+  const now = Date.now();
+  let lockedInfo: { locked: true; until: number } | null = null;
+  for (const id of identifiers) {
+    const state = await readState(redis, id);
+    const nextAttempts = (state.attempts || 0) + 1;
+    if (nextAttempts >= MAX_ATTEMPTS) {
+      const until = now + LOCK_MINUTES * 60 * 1000;
+      await saveState(redis, id, { attempts: nextAttempts, lockedUntil: until });
+      if (!lockedInfo || until > lockedInfo.until) lockedInfo = { locked: true, until };
+    } else {
+      await saveState(redis, id, { attempts: nextAttempts });
+    }
+  }
+  if (lockedInfo) return lockedInfo;
+  return { locked: false as const };
+}
+
+async function verifyRecaptcha(token: string | undefined, remoteIp: string | undefined) {
+  if (!RECAPTCHA_SECRET) return true;
+  if (!token) return false;
+  try {
+    const params = new URLSearchParams({ secret: RECAPTCHA_SECRET, response: token });
+    if (remoteIp) params.set("remoteip", remoteIp);
+    const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+    });
+    const data = await res.json();
+    return Boolean(data?.success);
+  } catch {
+    return false;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -15,15 +115,58 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
+        captchaToken: { label: "Captcha", type: "text" },
       },
-      async authorize(creds) {
+      async authorize(creds, req) {
         const email = creds?.email?.toString().toLowerCase();
         const password = creds?.password?.toString() ?? "";
-        if (!email || !password) return null;
+        const captchaToken = creds?.captchaToken?.toString();
+        const redis = (() => {
+          try { return getRedis(); } catch { return null; }
+        })();
+        const { identifiers, ip } = extractIdentifiers(email, req);
+
+        if (redis) {
+          const lockStatus = await checkLocked(redis, identifiers);
+          if (lockStatus.locked) {
+            throw new Error("LOCKED");
+          }
+        }
+
+        const captchaOk = await verifyRecaptcha(captchaToken, ip);
+        if (!captchaOk) {
+          throw new Error("CAPTCHA_FAILED");
+        }
+
+        if (!email || !password) {
+          if (redis) {
+            const failure = await recordFailure(redis, identifiers);
+            if (failure.locked) throw new Error("LOCKED");
+          }
+          throw new Error("INVALID");
+        }
+
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) return null;
+        if (!user) {
+          if (redis) {
+            const failure = await recordFailure(redis, identifiers);
+            if (failure.locked) throw new Error("LOCKED");
+          }
+          throw new Error("INVALID");
+        }
         const ok = await compare(password, user.passwordHash);
-        if (!ok) return null;
+        if (!ok) {
+          if (redis) {
+            const failure = await recordFailure(redis, identifiers);
+            if (failure.locked) throw new Error("LOCKED");
+          }
+          throw new Error("INVALID");
+        }
+
+        if (redis) {
+          try { await clearState(redis, identifiers); } catch {}
+        }
+
         return { id: user.id, name: user.name, email: user.email, role: user.role } as any as NextAuthUser;
       },
     }),
@@ -56,4 +199,3 @@ export async function requireAuth(roles?: ("ADMIN"|"TECH"|"CLERK")[]) {
   }
   return { ok: true as const, session, role };
 }
-
