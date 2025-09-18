@@ -25,18 +25,23 @@ export function AmountPad({ name, defaultValue, label = "المبلغ", classNam
 
   // Close on outside click and coordinate single-open pad between instances
   useEffect(() => {
-    function onDoc(e: MouseEvent) {
-      if (!ref.current || !closeOnOutsideClick) return;
-      if (!ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener('mousedown', onDoc);
     function onActivate(ev: Event) {
       const padId = (ev as CustomEvent<string>).detail;
       if (padId !== id) setOpen(false);
     }
     window.addEventListener('amount-pad-activated', onActivate as EventListener);
+    if (closeOnOutsideClick) {
+      const onDoc = (e: MouseEvent) => {
+        if (!ref.current) return;
+        if (!ref.current.contains(e.target as Node)) setOpen(false);
+      };
+      document.addEventListener('mousedown', onDoc);
+      return () => {
+        document.removeEventListener('mousedown', onDoc);
+        window.removeEventListener('amount-pad-activated', onActivate as EventListener);
+      };
+    }
     return () => {
-      document.removeEventListener('mousedown', onDoc);
       window.removeEventListener('amount-pad-activated', onActivate as EventListener);
     };
   }, [id, closeOnOutsideClick]);
