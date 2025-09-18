@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { ClipboardList, Wallet, PiggyBank, Users, Receipt, QrCode } from "lucide-react";
+import { ClipboardList, Wallet, Wallet2, Users, Receipt, QrCode } from "lucide-react";
 import { formatYMD_HM } from "@/lib/date";
 
 export default async function Dashboard() {
@@ -42,7 +42,7 @@ export default async function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <KpiCard title="محصّل اليوم" value={`${collectedToday.toFixed(2)} ر.س`} icon={<Receipt size={18} />} />
         <KpiCard title="محصّل الشهر" value={`${collectedMonth.toFixed(2)} ر.س`} icon={<QrCode size={18} />} />
-        <KpiCard title="الديون المتبقية" value={`${totalDebtRemaining.toFixed(2)} ر.س`} icon={<PiggyBank size={18} />} />
+        <KpiCard title="الديون المتبقية" value={`${totalDebtRemaining.toFixed(2)} ر.س`} icon={<Wallet2 size={18} />} />
       </div>
 
       <section className="card tonal p-0">
