@@ -1,6 +1,7 @@
 import AutoRefresh from "@/components/AutoRefresh";
 import TopNav from "@/components/layout/TopNav";
 import { ThemeSetter } from "@/components/ThemeSetter";
+import SessionIdleWatcher from "@/components/SessionIdleWatcher";
 import { getAuthSession } from "@/server/auth";
 import { getSettings } from "@/server/settings";
 import { redirect } from "next/navigation";
@@ -19,6 +20,7 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
   return (
     <>
       <ThemeSetter theme={theme} persist />
+      <SessionIdleWatcher timeoutMs={10 * 60 * 1000} />
       <AutoRefresh intervalMs={15000} />
       <TopNav initialName={brandName} initialLogo={brandLogo} />
       <main className="container">{children}</main>
