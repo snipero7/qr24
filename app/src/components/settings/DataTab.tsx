@@ -90,7 +90,7 @@ export function DataTab() {
               {!gConnected ? (
                 <a className="icon-ghost" href="/api/gdrive/oauth/start" title="ربط Google Drive"><LinkIcon size={24} /></a>
               ) : (
-                <button className="icon-ghost" onClick={async ()=>{ try { const r=await fetch('/api/gdrive/oauth/disconnect',{method:'POST'}); const d=await r.json(); if(!r.ok) throw new Error(d?.message||'فشل'); setGConnected(false);} catch(e:any){} }} title="فصل Google Drive"><Unlink size={24}/></button>
+                <button className="icon-ghost" onClick={async ()=>{ try { const r=await fetch('/api/gdrive/oauth/disconnect',{method:'POST'}); const d=await r.json(); if(!r.ok) throw new Error(d?.message||'فشل'); setGConnected(false);} catch{} }} title="فصل Google Drive"><Unlink size={24}/></button>
               )}
             </>
           );

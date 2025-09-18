@@ -8,7 +8,7 @@ import { debtTemplateForStatus } from "@/config/notifications";
 import { formatYMD } from "@/lib/date";
 import { toLatinDigits } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Pencil, Trash2, Wallet } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm";
 
 export type DebtRow = { id: string; service: string; amount: number; paid: number; remaining: number; status: string; createdAt: string };

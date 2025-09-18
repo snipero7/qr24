@@ -101,7 +101,7 @@ export async function DELETE(_request: Request, ctx: { params: RouteParams }) {
 
   try {
     await prisma.user.delete({ where: { id } });
-  } catch (err) {
+  } catch {
     return Response.json({ code: "SERVER_ERROR", message: "فشل الحذف" }, { status: 500 });
   }
 

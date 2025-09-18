@@ -10,7 +10,7 @@ import { orderTemplateForStatus } from "@/config/notifications";
 import { statusToArabic } from "@/lib/statusLabels";
 import { DeliveryNotifier } from "@/components/orders/DeliveryNotifier";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { FileDown, Printer, Trash2 } from "lucide-react";
+import { FileDown, Printer } from "lucide-react";
 import { RegenerateReceiptButton } from "@/components/RegenerateReceiptButton";
 import DeleteOrderButton from "@/components/orders/DeleteOrderButton";
 import EditOrderDialog from "@/components/orders/EditOrderDialog";

@@ -1,14 +1,9 @@
 import { prisma } from "@/server/db";
 import { getAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
-import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
-import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
-import { StatusBadge } from "@/components/ui/status-badge";
 import NewDebtForm from "@/components/debts/NewDebtForm";
 import { normalizeNumberInput } from "@/lib/utils";
 import DebtsTree, { DebtGroup } from "@/components/debts/DebtsTree";
-import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { debtTemplateForStatus } from "@/config/notifications";
 
 export default async function DebtsPage() {
   const session = await getAuthSession();

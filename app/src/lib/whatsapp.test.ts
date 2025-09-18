@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toE164KSA, buildWhatsAppLink, renderTemplate } from './whatsapp';
+import { toE164KSA, buildWhatsAppLink } from './whatsapp';
 
 describe('toE164KSA', () => {
   it('converts 05xxxxxxxx to 9665xxxxxxxx', () => {

@@ -14,7 +14,6 @@ import {
   Users,
   BarChart2,
   Settings,
-  Wrench,
   Menu
 } from "lucide-react";
 

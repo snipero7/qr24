@@ -6,7 +6,6 @@ import { Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/ui/select";
 import { AmountPad } from "@/components/ui/amount-pad";
 import { normalizeNumberInput, toLatinDigits } from "@/lib/utils";
 import { showToast } from "@/components/ui/toast";

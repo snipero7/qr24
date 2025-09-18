@@ -292,17 +292,10 @@ export async function generateThermalReceiptPdf(order: OrderInfo & { paymentMeth
       </View>
     );
   }
-  function L(ar: string, en: string) { return receiptLang === 'AR_EN' ? `${ar} / ${en}` : ar; }
-  function paymentLabel(m?: 'CASH'|'TRANSFER') {
-    if (!m) return '';
-    if (m === 'CASH') return receiptLang === 'AR_EN' ? 'نقدًا / Cash' : 'نقدًا';
-    return receiptLang === 'AR_EN' ? 'تحويل / Transfer' : 'تحويل';
-  }
   // (Reverted) No special embedding — rely on font and RTL page direction
   const base = typeof order.originalPrice === 'number' ? Number(order.originalPrice||0) : 0;
   const extra = typeof (order as any).extraCharge === 'number' ? Number((order as any).extraCharge||0) : 0;
   const effective = Math.max(0, base + extra);
-  const pm = ((order as any).paymentMethod as ('CASH'|'TRANSFER'|undefined|null)) ?? 'CASH';
 
   const doc = (
     <Document>
@@ -461,6 +454,7 @@ export async function generateThermalInvoicePdfNoVat(order: OrderInfo & { paymen
         {/* Header */}
         <View style={styles80.center}>
           {logoSrc ? <Image src={logoSrc as any} style={{ width: 120, objectFit: 'contain', marginBottom: 4 }} /> : null}
+          {stampUrl ? <Image src={stampUrl} style={{ width: 60, height: 60, marginBottom: 4 }} /> : null}
           <Text style={{ fontSize: 12, fontWeight: 700 }}>{storeName}</Text>
           {storeAddress ? <Text>{storeAddress}</Text> : null}
           {storePhone ? <Text>{L('جوال', 'Phone')}: {storePhone}</Text> : null}

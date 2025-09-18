@@ -2,7 +2,7 @@ import { prisma } from "@/server/db";
 import { requireAuth } from "@/server/auth";
 import { toCsv } from "@/server/csv";
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const auth = await requireAuth(["ADMIN"]);
   if (!auth.ok) return Response.json({ code: "UNAUTHORIZED", message: auth.message }, { status: auth.status });
 
@@ -29,4 +29,3 @@ export async function GET(req: Request) {
     },
   });
 }
-

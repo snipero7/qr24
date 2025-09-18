@@ -68,7 +68,7 @@ export async function maybeRunScheduledBackup(now: Date = new Date()) {
     const redis = getRedis() as any;
     const set = await redis.set(key, "1", "NX", "EX", 3600);
     if (set !== "OK") return { skipped: true, reason: "locked" } as any;
-  } catch (e) {
+  } catch {
     // If Redis unavailable, continue but still run once per request
   }
   const res = await createBackupNow();
