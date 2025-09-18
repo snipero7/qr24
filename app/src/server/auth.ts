@@ -11,6 +11,8 @@ const MAX_ATTEMPTS = Number(process.env.LOGIN_MAX_ATTEMPTS ?? 5);
 const LOCK_MINUTES = Number(process.env.LOGIN_LOCK_MINUTES ?? 15);
 const LOCK_TTL_SECONDS = Math.max(LOCK_MINUTES, 1) * 60;
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY;
+const REMEMBER_MAX_AGE_SECONDS = Number(process.env.LOGIN_REMEMBER_MAX_AGE_SECONDS ?? 30 * 24 * 60 * 60);
+const DEFAULT_MAX_AGE_SECONDS = Number(process.env.LOGIN_DEFAULT_MAX_AGE_SECONDS ?? 24 * 60 * 60);
 
 const prisma = new PrismaClient();
 
@@ -116,11 +118,19 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
         captchaToken: { label: "Captcha", type: "text" },
+        remember: { label: "Remember", type: "text" },
       },
       async authorize(creds, req) {
         const email = creds?.email?.toString().toLowerCase();
         const password = creds?.password?.toString() ?? "";
         const captchaToken = creds?.captchaToken?.toString();
+        const remember = (() => {
+          const raw = creds?.remember;
+          if (typeof raw === "string") {
+            return raw === "true" || raw === "on";
+          }
+          return false;
+        })();
         const redis = (() => {
           try { return getRedis(); } catch { return null; }
         })();
@@ -167,17 +177,28 @@ export const authOptions: NextAuthOptions = {
           try { await clearState(redis, identifiers); } catch {}
         }
 
-        return { id: user.id, name: user.name, email: user.email, role: user.role } as any as NextAuthUser;
+        return { id: user.id, name: user.name, email: user.email, role: user.role, remember } as any as NextAuthUser;
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) token.role = (user as any).role;
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        const remember = Boolean((user as any).remember);
+        const maxAge = remember ? REMEMBER_MAX_AGE_SECONDS : DEFAULT_MAX_AGE_SECONDS;
+        token.role = (user as any).role;
+        (token as any).remember = remember;
+        (token as any).exp = Math.floor(Date.now() / 1000 + maxAge);
+      } else if (trigger === "update" && session) {
+        if (typeof (session as any).remember === "boolean") {
+          (token as any).remember = (session as any).remember;
+        }
+      }
       return token;
     },
     async session({ session, token }) {
       (session.user as any).role = token.role;
+       (session as any).remember = (token as any).remember ?? false;
       return session;
     },
   },

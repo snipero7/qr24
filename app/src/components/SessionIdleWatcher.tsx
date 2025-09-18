@@ -60,7 +60,7 @@ export default function SessionIdleWatcher({ timeoutMs = DEFAULT_TIMEOUT }: { ti
       } catch {
         /* ignore */
       }
-      signOut({ callbackUrl: "/signin" });
+      signOut({ callbackUrl: "/signin?reason=timeout" });
     }
 
     function scheduleCheck() {
@@ -100,7 +100,7 @@ export default function SessionIdleWatcher({ timeoutMs = DEFAULT_TIMEOUT }: { ti
       if (event.key === SIGN_OUT_BROADCAST_KEY && !signingOutRef.current) {
         signingOutRef.current = true;
         clearTimer();
-        signOut({ callbackUrl: "/signin" });
+        signOut({ callbackUrl: "/signin?reason=timeout" });
       }
       if (event.key === LAST_ACTIVE_KEY && !signingOutRef.current) {
         scheduleCheck();

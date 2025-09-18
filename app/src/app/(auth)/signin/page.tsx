@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { PasswordInput } from "@/components/ui/password-input";
 import { showToast } from "@/components/ui/toast";
 import { Input } from "@/components/ui/input";
+import { useMemo } from "react";
 
 declare global {
   interface Window {
@@ -17,6 +18,8 @@ declare global {
 }
 
 const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+const REMEMBER_KEY = "qr24:remember";
+const REMEMBER_EMAIL_KEY = "qr24:remember-email";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -24,10 +27,12 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [remember, setRemember] = useState(false);
   const sp = useSearchParams();
   const router = useRouter();
   const captchaDivRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<number | null>(null);
+  const friendlyStoreName = useMemo(() => process.env.NEXT_PUBLIC_STORE_NAME || "منصة الصيانة", []);
 
   function mapError(code: string | null) {
     switch (code) {
@@ -52,9 +57,24 @@ export default function SignInPage() {
 
   useEffect(() => {
     const err = sp.get("error");
+    const reason = sp.get("reason");
     const mapped = mapError(err);
     if (mapped) setError(mapped);
+    else if (reason === "timeout") {
+      setError("تم إنهاء الجلسة بعد فترة من عدم النشاط. يرجى تسجيل الدخول مرة أخرى.");
+    }
   }, [sp]);
+
+  useEffect(() => {
+    try {
+      const savedRemember = localStorage.getItem(REMEMBER_KEY);
+      const savedEmail = localStorage.getItem(REMEMBER_EMAIL_KEY);
+      if (savedRemember === "true") {
+        setRemember(true);
+        if (savedEmail) setEmail(savedEmail);
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (!RECAPTCHA_SITE_KEY || !captchaDivRef.current) return;
@@ -126,6 +146,7 @@ export default function SignInPage() {
       email: email.trim().toLowerCase(),
       password,
       captchaToken: captchaToken ?? undefined,
+      remember: remember ? "true" : "false",
       redirect: false,
       callbackUrl,
     });
@@ -137,6 +158,15 @@ export default function SignInPage() {
       setLoading(false);
       return;
     }
+    try {
+      if (remember) {
+        localStorage.setItem(REMEMBER_KEY, "true");
+        localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim().toLowerCase());
+      } else {
+        localStorage.removeItem(REMEMBER_KEY);
+        localStorage.removeItem(REMEMBER_EMAIL_KEY);
+      }
+    } catch {}
     if (res?.url) {
       router.push(res.url);
     } else {
@@ -146,41 +176,88 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-16 card tonal p-0">
-      <div className="card-header">
-        <h1 className="card-title">تسجيل الدخول</h1>
-      </div>
-      <div className="card-section">
-        {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
-        <form onSubmit={submit} className="space-y-3">
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">البريد</label>
-            <Input
-              className="input w-full"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              type="email"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">كلمة المرور</label>
-            <PasswordInput
-              className="input w-full"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-            />
-          </div>
-          {RECAPTCHA_SITE_KEY ? (
-            <div className="flex justify-center">
-              <div ref={captchaDivRef} />
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#e0f2fe,#f8fafc_60%)] dark:bg-gradient-to-br dark:from-slate-900 dark:to-slate-950 flex flex-col lg:flex-row">
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12">
+        <div className="max-w-md w-full space-y-6 text-right">
+          <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/70 dark:bg-white/5 shadow-lg">
+            <span className="text-3xl">🔧</span>
+            <div>
+              <p className="text-sm text-slate-500 dark:text-slate-300">منصة إدارة خدمات الصيانة</p>
+              <p className="font-semibold text-lg text-slate-800 dark:text-white">{friendlyStoreName}</p>
             </div>
-          ) : null}
-          <button disabled={loading} className="btn-primary w-full">
-            {loading ? "جارٍ..." : "دخول"}
-          </button>
-        </form>
+          </div>
+          <div className="space-y-4">
+            <h2 className="text-3xl font-bold text-slate-800 dark:text-white">مرحبًا بعودتك</h2>
+            <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+              سجّل دخولك لمتابعة الطلبات، تحديث الحالات، وإرسال الإشعارات للعملاء بسهولة. بيانات الدخول متاحة للمسؤولين والفنيين المخوّلين فقط.
+            </p>
+            <div className="grid grid-cols-2 gap-3 text-sm text-slate-600 dark:text-slate-300">
+              <div className="rounded-xl bg-white/60 dark:bg-white/10 p-3 shadow-sm">
+                <p className="font-semibold">لوحة تحكم فورية</p>
+                <p>اطلع على الطلبات والديون والتسليمات لحظة بلحظة.</p>
+              </div>
+              <div className="rounded-xl bg-white/60 dark:bg-white/10 p-3 shadow-sm">
+                <p className="font-semibold">سجل آمن</p>
+                <p>يتم حفظ كل حركة وتوثيقها لحماية عملك وبيانات عملائك.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex w-full lg:w-1/2 items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-md card tonal p-0 shadow-xl">
+          <div className="card-header text-center lg:text-right">
+            <h1 className="card-title text-2xl">تسجيل الدخول</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">يرجى إدخال بيانات الوصول لحساب الموظفين.</p>
+          </div>
+          <div className="card-section space-y-4">
+            {error && <div className="text-red-600 dark:text-red-400 text-sm mb-1 bg-red-50/70 dark:bg-red-500/10 border border-red-200/60 dark:border-red-500/40 rounded-xl p-3">{error}</div>}
+            <form onSubmit={submit} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">البريد</label>
+                <Input
+                  className="input w-full"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  required
+                />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-sm text-gray-600 dark:text-gray-300">كلمة المرور</label>
+                  <a className="text-xs text-blue-600 hover:underline" href="mailto:support@example.com?subject=إعادة%20تعيين%20كلمة%20المرور">نسيت كلمة المرور؟</a>
+                </div>
+                <PasswordInput
+                  className="input w-full"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <label className="inline-flex items-center gap-2">
+                  <input type="checkbox" className="accent-blue-500 h-4 w-4" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                  <span>تذكرني في هذا الجهاز</span>
+                </label>
+              </div>
+              {RECAPTCHA_SITE_KEY ? (
+                <div className="flex justify-center">
+                  <div ref={captchaDivRef} />
+                </div>
+              ) : null}
+              <button disabled={loading} className="btn-primary w-full h-11 text-base font-semibold">
+                {loading ? "جارٍ التحقق..." : "تسجيل الدخول"}
+              </button>
+            </form>
+            <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+              بالدخول إلى النظام فإنك توافق على السياسات الداخلية وحماية بيانات العملاء.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
