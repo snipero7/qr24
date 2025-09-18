@@ -21,6 +21,8 @@ export default function DebtsTree({ groups }: { groups: DebtGroup[] }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  const [allowCollapse, setAllowCollapse] = useState(true);
+
   async function save(id: string, data: { service?: string; amount?: number; notes?: string }) {
     const res = await fetch(`/api/debts/${id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
     if (!res.ok) alert('فشل التعديل');
@@ -37,11 +39,12 @@ export default function DebtsTree({ groups }: { groups: DebtGroup[] }) {
   useEffect(() => {
     function onDoc(e: MouseEvent) {
       if (!wrapRef.current) return;
+      if (!allowCollapse) return;
       if (!wrapRef.current.contains(e.target as Node)) setExpandedIdx(null);
     }
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
-  }, []);
+  }, [allowCollapse]);
 
   return (
     <div className="space-y-3" ref={wrapRef}>
@@ -91,7 +94,11 @@ export default function DebtsTree({ groups }: { groups: DebtGroup[] }) {
                           params={{ shopName: g.shopName, remaining: d.remaining, paid: d.paid, amount: d.amount, service: d.service }}
                           variant="icon"
                         />
-                        <AddPaymentDialog debtId={d.id} variant="icon" />
+                        <AddPaymentDialog
+                          debtId={d.id}
+                          variant="icon"
+                          onOpenChange={(o) => setAllowCollapse(!o)}
+                        />
                         {editing === d.id ? (
                           <>
                             <button className="btn-primary h-8 px-3" onClick={async (e)=>{
