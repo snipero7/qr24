@@ -208,7 +208,6 @@ export default function SignInPage() {
         <div className="w-full max-w-md card tonal p-0 shadow-xl">
           <div className="card-header text-center lg:text-right">
             <h1 className="card-title text-2xl">تسجيل الدخول</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">يرجى إدخال بيانات الوصول لحساب الموظفين.</p>
           </div>
           <div className="card-section space-y-4">
             {error && <div className="text-red-600 dark:text-red-400 text-sm mb-1 bg-red-50/70 dark:bg-red-500/10 border border-red-200/60 dark:border-red-500/40 rounded-xl p-3">{error}</div>}
