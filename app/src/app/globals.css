@@ -190,6 +190,9 @@ a { @apply text-[var(--color-primary)] hover:text-[var(--color-primary-700)]; }
   margin-inline-start: 0.25rem;
 }
 .icon-ghost-text { @apply inline-flex items-center gap-2 px-3 h-12 sm:h-10 bg-transparent border-0 outline-none text-[var(--color-primary)] hover:text-[var(--color-primary-700)] rounded-xl; }
+.icon-ghost.no-label::after {
+  content: '';
+}
 .icon-ghost svg, .icon-ghost-text svg { width: 24px !important; height: 24px !important; }
 .settings-tabs .icon-ghost-text svg { width: 26px !important; height: 26px !important; stroke-width: 1.75 !important; }
 .settings-tabs + button.icon-ghost svg { width: 26px !important; height: 26px !important; }
