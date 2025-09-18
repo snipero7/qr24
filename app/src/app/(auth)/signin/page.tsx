@@ -179,49 +179,52 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col lg:flex-row">
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center px-14 py-16">
-        <div className="max-w-xl w-full space-y-8 text-right">
-          <div className="space-y-3">
+        <div className="max-w-xl w-full space-y-8 text-right animate-fade-up animation-fill-both">
+          <div className="space-y-3 animate-fade-up animation-fill-both">
             <div className="flex items-center justify-end gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl">🔧</div>
-              <div>
+              <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl animate-scale-in animation-fill-both">🔧</div>
+              <div className="animate-fade-up animate-delay-1 animation-fill-both">
                 <p className="text-sm text-slate-500">منصة إدارة خدمات الصيانة</p>
                 <p className="text-2xl font-semibold text-slate-900">{friendlyStoreName}</p>
               </div>
             </div>
-            <span className="inline-block text-xs text-slate-400 tracking-[0.35em] uppercase">Welcome Back</span>
+            <span className="inline-block text-xs text-slate-400 tracking-[0.35em] uppercase animate-fade-up animate-delay-2 animation-fill-both">Welcome Back</span>
           </div>
-          <h2 className="text-3xl font-bold text-slate-900 leading-snug">
+          <h2 className="text-3xl font-bold text-slate-900 leading-snug animate-fade-up animate-delay-1 animation-fill-both">
             إدارة متكاملة لطلبات الصيانة من نقطة استقبال الجهاز وحتى التسليم.
           </h2>
-          <p className="text-slate-600 leading-relaxed text-base">
+          <p className="text-slate-600 leading-relaxed text-base animate-fade-up animate-delay-2 animation-fill-both">
             تابع مؤشرات الأداء، تواصل مع عملائك، وأدر فريقك من واجهة واحدة. يتم تحديث البيانات لحظيًا لضمان شفافية سير العمل.
           </p>
-          <div className="space-y-3">
+          <div className="space-y-3 animate-fade-up animate-delay-3 animation-fill-both">
             <FeatureCard
               icon={<LineChart className="h-5 w-5 text-blue-600" />}
               title="لوحة تحكم ثرية"
               description="مؤشرات لحظية للطلبات والديون وحجوزات التسليم لدعم قراراتك اليومية."
+              delayClass="animate-delay-1"
             />
             <FeatureCard
               icon={<ShieldCheck className="h-5 w-5 text-emerald-600" />}
               title="أمان البيانات"
               description="صلاحيات دقيقة لكل مستخدم وسجل كامل للحركات لتوثيق العمليات."
+              delayClass="animate-delay-2"
             />
             <FeatureCard
               icon={<Clock4 className="h-5 w-5 text-amber-600" />}
               title="تنبيهات ذكية"
               description="تنبيهات عند تأخر الطلبات وإشعارات تسليم فورية عبر الواتساب والبريد."
+              delayClass="animate-delay-3"
             />
           </div>
         </div>
       </div>
       <div className="flex w-full lg:w-1/2 items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-md card tonal p-0 shadow-xl">
+        <div className="w-full max-w-md card tonal p-0 shadow-xl animate-scale-in animate-delay-1 animation-fill-both">
           <div className="card-header text-center lg:text-right">
             <h1 className="card-title text-2xl">تسجيل الدخول</h1>
           </div>
           <div className="card-section space-y-4">
-            {error && <div className="text-red-600 dark:text-red-400 text-sm mb-1 bg-red-50/70 dark:bg-red-500/10 border border-red-200/60 dark:border-red-500/40 rounded-xl p-3">{error}</div>}
+            {error && <div className="text-red-600 dark:text-red-400 text-sm mb-1 bg-red-50/70 dark:bg-red-500/10 border border-red-200/60 dark:border-red-500/40 rounded-xl p-3 animate-fade-up animation-fill-both">{error}</div>}
             <form onSubmit={submit} className="space-y-4">
               <div>
                 <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">البريد</label>
@@ -273,9 +276,9 @@ export default function SignInPage() {
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: ReactNode; title: string; description: string }) {
+function FeatureCard({ icon, title, description, delayClass }: { icon: ReactNode; title: string; description: string; delayClass?: string }) {
   return (
-    <div className="flex flex-row-reverse items-start gap-3 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 shadow-sm">
+    <div className={`flex flex-row-reverse items-start gap-3 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 shadow-sm animate-fade-up animation-fill-both ${delayClass ?? ""}`}>
       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100">
         {icon}
       </div>

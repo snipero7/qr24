@@ -139,6 +139,34 @@ a { @apply text-[var(--color-primary)] hover:text-[var(--color-primary-700)]; }
 .settings-tabs .icon-ghost-text svg { width: 26px !important; height: 26px !important; stroke-width: 1.75 !important; }
 .settings-tabs + button.icon-ghost svg { width: 26px !important; height: 26px !important; }
 
+/* Simple keyframe animations used on marketing surfaces */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-up {
+  opacity: 0;
+  animation: fade-up 0.7s ease forwards;
+}
+
+.animate-scale-in {
+  opacity: 0;
+  animation: scale-in 0.45s ease forwards;
+}
+
+.animate-delay-1 { animation-delay: 0.15s; }
+.animate-delay-2 { animation-delay: 0.3s; }
+.animate-delay-3 { animation-delay: 0.45s; }
+.animate-delay-4 { animation-delay: 0.6s; }
+
+.animation-fill-both { animation-fill-mode: both; }
+
 /* Glassy row hover (shared) */
 .orders-table tbody tr.orders-row, .glass-table tbody tr.glass-row { transition: box-shadow 150ms ease; }
 .orders-table tbody tr.orders-row:hover, .glass-table tbody tr.glass-row:hover { filter: drop-shadow(0 1px 3px rgba(0,0,0,0.08)); }
