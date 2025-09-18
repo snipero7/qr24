@@ -17,7 +17,7 @@ export function UserNav() {
           </span>
           <button
             onClick={() => signOut({ callbackUrl: "/signin" })}
-            className="icon-ghost no-label h-9 w-9"
+            className="icon-ghost no-label h-9 w-9 text-[var(--color-primary)] dark:text-[var(--color-primary)]"
             title="تسجيل الخروج"
             aria-label="تسجيل الخروج"
           >

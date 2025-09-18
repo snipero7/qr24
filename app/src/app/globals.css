@@ -190,6 +190,10 @@ a { @apply text-[var(--color-primary)] hover:text-[var(--color-primary-700)]; }
 .icon-ghost.no-label::after {
   content: none;
 }
+.icon-ghost.no-label {
+  gap: 0;
+  padding-inline: 0.75rem;
+}
 [dir="rtl"] .icon-ghost[data-label]::after {
   margin-inline-end: 0.25rem;
 }
