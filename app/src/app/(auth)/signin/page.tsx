@@ -179,7 +179,7 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col lg:flex-row">
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center px-14 py-16">
-        <div className="max-w-xl w-full space-y-8 text-right animate-fade-up animation-fill-both">
+        <div className="font-cairo max-w-xl w-full space-y-8 text-right animate-fade-up animation-fill-both">
           <div className="space-y-3 animate-fade-up animation-fill-both">
             <div className="flex items-center justify-end gap-4">
               <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl animate-scale-in animation-fill-both">🔧</div>

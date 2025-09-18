@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Cairo";
+  src: url("/fonts/Cairo-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Cairo";
+  src: url("/fonts/Cairo-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* Softer page background to distinguish cards */
   --background: #F7F8FA; /* light slate/neutral */
@@ -34,6 +50,10 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+.font-cairo {
+  font-family: "Cairo", var(--font-sans);
 }
 
 /* Dark mode via attribute overrides (ThemeToggle) */
