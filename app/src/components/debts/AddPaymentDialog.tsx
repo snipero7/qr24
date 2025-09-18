@@ -48,7 +48,7 @@ export function AddPaymentDialog({ debtId, variant = "text" }: { debtId: string;
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogHeader title="سداد" />
         {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
-        <AmountPad name="amount" label="المبلغ" onChangeValue={(n)=>setAmount(n)} />
+        <AmountPad name="amount" label="المبلغ" onChangeValue={(n)=>setAmount(n)} closeOnOutsideClick={false} />
         <div className="flex gap-2 justify-end mt-3">
           <Button variant="outline" size="md" className="h-12 px-5" onClick={()=>setOpen(false)}>إلغاء</Button>
           <Button disabled={loading} size="lg" className="h-14 sm:h-12 px-6" onClick={submit}>{loading?"جارٍ...":"تأكيد"}</Button>

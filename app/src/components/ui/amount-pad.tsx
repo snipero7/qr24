@@ -7,9 +7,10 @@ type Props = {
   label?: string;
   className?: string;
   onChangeValue?: (n: number) => void;
+  closeOnOutsideClick?: boolean;
 };
 
-export function AmountPad({ name, defaultValue, label = "المبلغ", className, onChangeValue }: Props) {
+export function AmountPad({ name, defaultValue, label = "المبلغ", className, onChangeValue, closeOnOutsideClick = true }: Props) {
   const [val, setVal] = useState<string>("");
   const [open, setOpen] = useState(false);
   const id = useId();
@@ -25,7 +26,7 @@ export function AmountPad({ name, defaultValue, label = "المبلغ", classNam
   // Close on outside click and coordinate single-open pad between instances
   useEffect(() => {
     function onDoc(e: MouseEvent) {
-      if (!ref.current) return;
+      if (!ref.current || !closeOnOutsideClick) return;
       if (!ref.current.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener('mousedown', onDoc);
@@ -38,7 +39,7 @@ export function AmountPad({ name, defaultValue, label = "المبلغ", classNam
       document.removeEventListener('mousedown', onDoc);
       window.removeEventListener('amount-pad-activated', onActivate as EventListener);
     };
-  }, [id]);
+  }, [id, closeOnOutsideClick]);
 
   function update(next: string) { setVal(next); }
 
