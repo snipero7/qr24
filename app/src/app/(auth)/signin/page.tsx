@@ -179,21 +179,21 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col lg:flex-row">
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center px-14 py-16">
-        <div className="font-cairo max-w-xl w-full space-y-8 text-right animate-fade-up animation-fill-both">
-          <div className="space-y-3 animate-fade-up animation-fill-both">
-            <div className="flex items-center justify-end gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl animate-scale-in animation-fill-both">🔧</div>
+        <div className="font-cairo max-w-xl w-full space-y-10 text-right animate-fade-up animation-fill-both">
+          <div className="space-y-4 animate-fade-up animation-fill-both">
+            <div className="flex items-center justify-end gap-5">
+              <div className="h-14 w-14 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center text-3xl animate-scale-in animation-fill-both">🔧</div>
               <div className="animate-fade-up animate-delay-1 animation-fill-both">
-                <p className="text-sm text-slate-500">منصة إدارة خدمات الصيانة</p>
-                <p className="text-2xl font-semibold text-slate-900">{friendlyStoreName}</p>
+                <p className="text-base text-slate-500">منصة إدارة خدمات الصيانة</p>
+                <p className="text-[2rem] font-semibold text-slate-900">{friendlyStoreName}</p>
               </div>
             </div>
             <span className="inline-block text-xs text-slate-400 tracking-[0.35em] uppercase animate-fade-up animate-delay-2 animation-fill-both">Welcome Back</span>
           </div>
-          <h2 className="text-3xl font-bold text-slate-900 leading-snug animate-fade-up animate-delay-1 animation-fill-both">
+          <h2 className="text-[2.25rem] font-bold text-slate-900 leading-snug animate-fade-up animate-delay-1 animation-fill-both">
             إدارة متكاملة لطلبات الصيانة من نقطة استقبال الجهاز وحتى التسليم.
           </h2>
-          <p className="text-slate-600 leading-relaxed text-base animate-fade-up animate-delay-2 animation-fill-both">
+          <p className="text-slate-600 leading-loose text-lg animate-fade-up animate-delay-2 animation-fill-both">
             تابع مؤشرات الأداء، تواصل مع عملائك، وأدر فريقك من واجهة واحدة. يتم تحديث البيانات لحظيًا لضمان شفافية سير العمل.
           </p>
           <div className="space-y-3 animate-fade-up animate-delay-3 animation-fill-both">
@@ -285,8 +285,8 @@ function FeatureCard({ icon, title, description, delayClass }: { icon: ReactNode
         {icon}
       </div>
       <div className="space-y-1 text-right">
-        <p className="font-semibold text-slate-800 text-sm">{title}</p>
-        <p className="text-xs text-slate-500 leading-relaxed">{description}</p>
+        <p className="font-semibold text-slate-800 text-base">{title}</p>
+        <p className="text-sm text-slate-500 leading-relaxed">{description}</p>
       </div>
     </div>
   );
