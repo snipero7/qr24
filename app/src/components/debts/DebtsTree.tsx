@@ -1,14 +1,11 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
 import { AmountPad } from "@/components/ui/amount-pad";
-import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { debtTemplateForStatus } from "@/config/notifications";
+import { DebtActions } from "@/components/debts/DebtActions";
 import { formatYMD } from "@/lib/date";
 import { toLatinDigits } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Pencil, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm";
 
 export type DebtRow = { id: string; service: string; amount: number; paid: number; remaining: number; status: string; createdAt: string };
@@ -87,39 +84,22 @@ export default function DebtsTree({ groups }: { groups: DebtGroup[] }) {
                       <td className="p-2 tabular-nums">{d.remaining}</td>
                       <td className="p-2"><StatusBadge status={d.status as any} /></td>
                       <td className="p-2">{formatYMD(d.createdAt)}</td>
-                      <td className="p-2 flex items-center gap-2">
-                        <WhatsAppButton
-                          phone={g.phone ? toLatinDigits(g.phone) : g.phone}
-                          templateKey={debtTemplateForStatus(d.status) as any}
-                          params={{ shopName: g.shopName, remaining: d.remaining, paid: d.paid, amount: d.amount, service: d.service }}
-                          variant="icon"
+                      <td className="p-2">
+                        <DebtActions
+                          debt={d}
+                          phone={g.phone}
+                          shopName={g.shopName}
+                          editingId={editing}
+                          setEditingId={setEditing}
+                          setAllowCollapse={setAllowCollapse}
+                          onSave={async (svc, amount) => {
+                            await save(d.id, { service: svc, amount });
+                          }}
+                          onDelete={() => {
+                            setDeleteId(d.id);
+                            setConfirmOpen(true);
+                          }}
                         />
-                        <AddPaymentDialog
-                          debtId={d.id}
-                          variant="icon"
-                          onOpenChange={(o) => setAllowCollapse(!o)}
-                        />
-                        {editing === d.id ? (
-                          <>
-                            <button className="btn-primary h-8 px-3" onClick={async (e)=>{
-                              e.stopPropagation();
-                              const svc = (document.getElementById(`svc-${d.id}`) as HTMLInputElement)?.value;
-                              const amt = (window as any)[`amountVal_${d.id}`];
-                              await save(d.id, { service: svc, amount: amt });
-                              setEditing(null);
-                            }}>حفظ</button>
-                            <button className="btn-outline h-8 px-3" onClick={(e)=>{ e.stopPropagation(); setEditing(null); }}>إلغاء</button>
-                          </>
-                        ) : (
-                          <>
-                            <button title="تعديل" className="icon-ghost" onClick={(e)=>{ e.stopPropagation(); setEditing(d.id); }}>
-                              <Pencil className="w-5 h-5 text-[var(--color-primary)] dark:text-[var(--color-primary)]" />
-                            </button>
-                            <button title="حذف" className="icon-ghost text-red-600 dark:text-red-400" onClick={(e)=>{ e.stopPropagation(); setDeleteId(d.id); setConfirmOpen(true); }}>
-                              <Trash2 className="w-5 h-5" />
-                            </button>
-                          </>
-                        )}
                       </td>
                     </tr>
                   ))}
