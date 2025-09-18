@@ -12,11 +12,13 @@ type OrderInfo = {
   code: string;
   service: string;
   deviceModel?: string | null;
+  status?: string | null;
   collectedPrice: number;
   collectedAt: Date;
   originalPrice?: number | null;
   extraCharge?: number | null;
   extraReason?: string | null;
+  imei?: string | null;
   customer: { name: string; phone: string };
 };
 
