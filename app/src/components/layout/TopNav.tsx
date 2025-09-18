@@ -119,9 +119,10 @@ export default function TopNav({ initialName, initialLogo }: TopNavProps = {}) {
   );
 
   const linkBase = [
-    "px-5 py-2 rounded-xl text-sm font-medium transition-colors",
+    "px-5 py-2 rounded-xl text-sm font-medium transition-colors transition-transform",
     "text-[color:rgb(100_116_139)] dark:text-[color:rgb(148_163_184)]",
     "hover:text-[var(--foreground)]",
+    "hover:translate-y-[-2px] hover:shadow-md hover:bg-white/90",
   ].join(" ");
   const linkActive = [
     // Use surface variable so it adapts to both themes
