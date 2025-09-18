@@ -1,6 +1,7 @@
 import { prisma } from "@/server/db";
 import { requireAuth } from "@/server/auth";
 import { toCsv, toExcelHtml } from "@/server/csv";
+import { DEBT_STATUS_LABELS } from "@/lib/statusLabels";
 
 export async function GET(req: Request) {
   const auth = await requireAuth(["ADMIN"]);
@@ -35,14 +36,13 @@ export async function GET(req: Request) {
     const paid = d.payments.reduce((s, p) => s + Number(p.amount), 0);
     const remaining = Math.max(0, Number(d.amount) - paid);
     return {
-      id: d.id,
       shopName: d.shopName,
       phone: d.phone ?? "",
       service: d.service,
       amount: Number(d.amount),
       paid,
       remaining,
-      status: d.status,
+      status: DEBT_STATUS_LABELS[d.status as keyof typeof DEBT_STATUS_LABELS] ?? d.status,
       createdAt: d.createdAt.toISOString(),
     };
   }).filter((row) => {
@@ -54,7 +54,6 @@ export async function GET(req: Request) {
   });
 
   const columns = [
-    { key: "id", label: "المعرف" },
     { key: "shopName", label: "الجهة" },
     { key: "phone", label: "الهاتف" },
     { key: "service", label: "الخدمة" },

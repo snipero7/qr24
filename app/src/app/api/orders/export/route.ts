@@ -1,6 +1,7 @@
 import { prisma } from "@/server/db";
 import { requireAuth } from "@/server/auth";
 import { toCsv, toExcelHtml } from "@/server/csv";
+import { statusToArabic } from "@/lib/statusLabels";
 
 export async function GET(req: Request) {
   const auth = await requireAuth(["ADMIN","CLERK"]);
@@ -38,10 +39,9 @@ export async function GET(req: Request) {
     take: 2000,
   });
 
-  const rows = items.map(o => ({
-    id: o.id,
+  const rows = items.map((o) => ({
     code: o.code,
-    status: o.status,
+    status: statusToArabic(o.status),
     customer: o.customer.name,
     phone: o.customer.phone,
     service: o.service,
@@ -54,7 +54,6 @@ export async function GET(req: Request) {
   }));
 
   const columns = [
-    { key: "id", label: "المعرف" },
     { key: "code", label: "الكود" },
     { key: "status", label: "الحالة" },
     { key: "customer", label: "العميل" },
