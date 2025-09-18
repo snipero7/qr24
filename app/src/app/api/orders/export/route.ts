@@ -1,12 +1,13 @@
 import { prisma } from "@/server/db";
 import { requireAuth } from "@/server/auth";
-import { toCsv } from "@/server/csv";
+import { toCsv, toExcelHtml } from "@/server/csv";
 
 export async function GET(req: Request) {
   const auth = await requireAuth(["ADMIN","CLERK"]);
   if (!auth.ok) return Response.json({ code: "UNAUTHORIZED", message: auth.message }, { status: auth.status });
 
   const { searchParams } = new URL(req.url);
+  const format = (searchParams.get("format") || "csv").toLowerCase();
   const q = searchParams.get("q") ?? searchParams.get("query") ?? undefined;
   const status = searchParams.get("status") ?? undefined;
   const phone = searchParams.get("phone") ?? undefined;
@@ -52,14 +53,25 @@ export async function GET(req: Request) {
     collectedAt: o.collectedAt ? o.collectedAt.toISOString() : "",
   }));
 
-  const csv = toCsv(rows, [
+  const columns = [
     "id","code","status","customer","phone","service","deviceModel","originalPrice","collectedPrice","createdAt","updatedAt","collectedAt",
-  ]);
+  ];
 
+  if (format === "excel") {
+    const html = toExcelHtml(rows, columns);
+    return new Response(html, {
+      headers: {
+        "content-type": "application/vnd.ms-excel; charset=utf-8",
+        "content-disposition": `attachment; filename=orders-${Date.now()}.xls`,
+      },
+    });
+  }
+
+  const csv = toCsv(rows, columns);
   return new Response(csv, {
     headers: {
       "content-type": "text/csv; charset=utf-8",
-      "content-disposition": `attachment; filename=orders.csv`,
+      "content-disposition": `attachment; filename=orders-${Date.now()}.csv`,
     },
   });
 }

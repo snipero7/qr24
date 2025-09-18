@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import NewDebtForm from "@/components/debts/NewDebtForm";
 import { normalizeNumberInput } from "@/lib/utils";
 import DebtsTree, { DebtGroup } from "@/components/debts/DebtsTree";
+import DebtsExportDialog from "@/components/debts/DebtsExportDialog";
 
 export default async function DebtsPage() {
   const session = await getAuthSession();
@@ -31,8 +32,9 @@ export default async function DebtsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-bold">الديون</h1>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <NewDebtForm shops={shops} action={createDebt} />
+        <DebtsExportDialog />
       </div>
       <DebtsTree groups={groups} />
     </div>

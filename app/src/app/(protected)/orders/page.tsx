@@ -5,7 +5,7 @@ import { DeliverDialog } from "@/components/DeliverDialog";
 import { QuickStatus } from "@/components/orders/QuickStatus";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Search, FileDown, RotateCcw } from "lucide-react";
+import { Search, FileDown, RotateCcw, FileSpreadsheet } from "lucide-react";
 import EditOrderDialog from "@/components/orders/EditOrderDialog";
 import DeleteOrderButton from "@/components/orders/DeleteOrderButton";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
@@ -139,9 +139,31 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <button className="icon-ghost" title="بحث" aria-label="بحث">
             <Search size={24} />
           </button>
-          <a className="icon-ghost" title="تصدير CSV" aria-label="تصدير CSV" href={`/api/orders/export?${new URLSearchParams({ q: qDisplay, status: status||"", phone: phoneNorm, createdFrom, createdTo, priceMin: priceMinStr||"", priceMax: priceMaxStr||"" }).toString()}`}>
-            <FileDown size={24} />
-          </a>
+          {(() => {
+            const params = new URLSearchParams({
+              q: qDisplay,
+              status: status || "",
+              phone: phoneNorm,
+              createdFrom,
+              createdTo,
+              priceMin: priceMinStr || "",
+              priceMax: priceMaxStr || "",
+            });
+            const csvHref = `/api/orders/export?${params.toString()}`;
+            const excelParams = new URLSearchParams(params);
+            excelParams.set("format", "excel");
+            const excelHref = `/api/orders/export?${excelParams.toString()}`;
+            return (
+              <>
+                <a className="icon-ghost" title="تصدير CSV" aria-label="تصدير CSV" href={csvHref}>
+                  <FileDown size={24} />
+                </a>
+                <a className="icon-ghost" title="تصدير Excel" aria-label="تصدير Excel" href={excelHref}>
+                  <FileSpreadsheet size={24} />
+                </a>
+              </>
+            );
+          })()}
           <a className="icon-ghost" title="إعادة تعيين" aria-label="إعادة تعيين" href="/orders">
             <RotateCcw size={24} />
           </a>
