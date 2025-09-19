@@ -438,6 +438,7 @@ export async function generateThermalInvoicePdfNoVat(order: OrderInfo & { paymen
 
   const base = typeof order.originalPrice === 'number' ? Number(order.originalPrice || 0) : 0;
   const extra = typeof (order as any).extraCharge === 'number' ? Number((order as any).extraCharge || 0) : 0;
+  const extraReason = typeof (order as any).extraReason === 'string' ? (order as any).extraReason.trim() : '';
   const effective = Math.max(0, base + extra);
   const discount = Math.max(0, effective - Number(order.collectedPrice || 0));
   const pm2 = ((order as any).paymentMethod as ('CASH'|'TRANSFER'|undefined|null)) ?? 'CASH';
@@ -485,6 +486,9 @@ export async function generateThermalInvoicePdfNoVat(order: OrderInfo & { paymen
         <Dash />
         {/* Pricing */}
         <Row label={L('السعر الأساسي', 'Base Price')} value={base} />
+        {extra > 0 ? (
+          <Row label={extraReason ? L(`رسوم إضافية (${extraReason})`, `Extra (${extraReason})`) : L('رسوم إضافية', 'Extra')} value={extra} />
+        ) : null}
         <Row label={L('الإجمالي قبل الخصم', 'Total before Discount')} value={effective} />
         <Row label={L('الخصم', 'Discount')} value={`-${sar(discount)}`} />
         <Row label={L('المبلغ بعد الخصم', 'Amount Due')} value={Number(order.collectedPrice || 0)} />
