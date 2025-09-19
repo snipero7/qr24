@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Save, Store, MessageSquare, FileText, MonitorCog, Database, Shield, ImagePlus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Save, Store, MessageSquare, FileText, MonitorCog, Database, Shield, ImagePlus, Menu } from "lucide-react";
 import { DataTab } from "@/components/settings/DataTab";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -44,6 +44,17 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string| null>(null);
   const [s, setS] = useState<any>({});
+  const [navOpen, setNavOpen] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  const tabsConfig: Array<{ key: Tab; label: string; Icon: any }> = [
+    { key: "store", label: "المتجر", Icon: Store },
+    { key: "notify", label: "الرسائل", Icon: MessageSquare },
+    { key: "receipt", label: "الإيصال", Icon: FileText },
+    { key: "ui", label: "الواجهة", Icon: MonitorCog },
+    { key: "data", label: "البيانات", Icon: Database },
+    { key: "advanced", label: "متقدم", Icon: Shield },
+  ];
 
   useEffect(() => {
     (async () => {
@@ -58,6 +69,16 @@ export default function SettingsPage() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!navOpen) return;
+    function onDoc(e: MouseEvent) {
+      if (!navRef.current) return;
+      if (!navRef.current.contains(e.target as Node)) setNavOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [navOpen]);
 
   async function save(partial: any) {
     setSaving(true); setErr(null);
@@ -79,28 +100,50 @@ export default function SettingsPage() {
       {err && <div className="text-red-600 text-sm">{err}</div>}
 
       <div className="card tonal p-0">
-        <div className="card-header">
-          <div className="flex items-center gap-2 settings-tabs">
-            <button className={`icon-ghost inline-flex items-center gap-1 ${tab==='store'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('store')} title="المتجر" aria-label="المتجر">
-              <Store size={24}/><span className="text-sm">المتجر</span>
-            </button>
-            <button className={`icon-ghost inline-flex items-center gap-1 ${tab==='notify'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('notify')} title="الرسائل">
-              <MessageSquare size={24}/><span className="text-sm">الرسائل</span>
-            </button>
-            <button className={`icon-ghost inline-flex items-center gap-1 ${tab==='receipt'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('receipt')} title="الإيصال">
-              <FileText size={24}/><span className="text-sm">الإيصال</span>
-            </button>
-            <button className={`icon-ghost inline-flex items-center gap-1 ${tab==='ui'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('ui')} title="الواجهة">
-              <MonitorCog size={24}/><span className="text-sm">الواجهة</span>
-            </button>
-            <button className={`icon-ghost inline-flex items-center gap-1 ${tab==='data'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('data')} title="البيانات">
-              <Database size={24}/><span className="text-sm">البيانات</span>
-            </button>
-            <button className={`icon-ghost inline-flex items-center gap-1 ${tab==='advanced'?'text-[var(--color-primary-700)]':''}`} onClick={()=>setTab('advanced')} title="متقدم">
-              <Shield size={24}/><span className="text-sm">متقدم</span>
-            </button>
+        <div className="card-header flex-wrap gap-2" ref={navRef}>
+          <div className="hidden md:flex items-center gap-2 settings-tabs">
+            {tabsConfig.map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                className={`icon-ghost inline-flex items-center gap-1 ${tab===key?'text-[var(--color-primary-700)]':''}`}
+                onClick={() => { setTab(key); setNavOpen(false); }}
+                title={label}
+                aria-label={label}
+                data-label={label}
+              >
+                <Icon size={24} />
+                <span className="text-sm">{label}</span>
+              </button>
+            ))}
           </div>
-          <button className="icon-ghost" onClick={()=>save({})} title="حفظ الكل" aria-label="حفظ الكل"><Save size={24}/></button>
+          <div className="md:hidden w-full" >
+            <button
+              type="button"
+              className="icon-ghost w-full justify-between"
+              data-label="القائمة"
+              aria-label="القائمة"
+              aria-expanded={navOpen}
+              onClick={() => setNavOpen((o) => !o)}
+            >
+              <Menu size={22} />
+            </button>
+            {navOpen && (
+              <div className="mt-2 card space-y-1">
+                {tabsConfig.map(({ key, label, Icon }) => (
+                  <button
+                    key={key}
+                    className={`icon-ghost w-full justify-start ${tab===key?'text-[var(--color-primary-700)]':''}`}
+                    data-label={label}
+                    aria-label={label}
+                    onClick={() => { setTab(key); setNavOpen(false); }}
+                  >
+                    <Icon size={20} />
+                    <span className="text-sm">{label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="card-section">
