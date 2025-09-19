@@ -27,6 +27,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [remember, setRemember] = useState(false);
   const sp = useSearchParams();
@@ -59,10 +60,14 @@ export default function SignInPage() {
   useEffect(() => {
     const err = sp.get("error");
     const reason = sp.get("reason");
+    const reset = sp.get("reset");
     const mapped = mapError(err);
     if (mapped) setError(mapped);
     else if (reason === "timeout") {
       setError("تم إنهاء الجلسة بعد فترة من عدم النشاط. يرجى تسجيل الدخول مرة أخرى.");
+    }
+    if (reset === "success") {
+      setInfo("تم تحديث كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.");
     }
   }, [sp]);
 
@@ -224,6 +229,7 @@ export default function SignInPage() {
             <h1 className="card-title text-2xl">تسجيل الدخول</h1>
           </div>
           <div className="card-section space-y-4">
+            {info && <div className="text-emerald-600 dark:text-emerald-400 text-sm mb-1 bg-emerald-50/70 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/40 rounded-xl p-3 animate-fade-up animation-fill-both">{info}</div>}
             {error && <div className="text-red-600 dark:text-red-400 text-sm mb-1 bg-red-50/70 dark:bg-red-500/10 border border-red-200/60 dark:border-red-500/40 rounded-xl p-3 animate-fade-up animation-fill-both">{error}</div>}
             <form onSubmit={submit} className="space-y-4">
               <div>
@@ -241,7 +247,7 @@ export default function SignInPage() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-sm text-gray-600 dark:text-gray-300">كلمة المرور</label>
-                  <a className="text-xs text-blue-600 hover:underline" href="mailto:support@example.com?subject=إعادة%20تعيين%20كلمة%20المرور">نسيت كلمة المرور؟</a>
+                  <a className="text-xs text-blue-600 hover:underline" href="/forgot">نسيت كلمة المرور؟</a>
                 </div>
                 <PasswordInput
                   className="input w-full"

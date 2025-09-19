@@ -41,11 +41,22 @@ export const addPaymentSchema = z.object({
   amount: z.coerce.number().positive(),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email({ message: "بريد غير صالح" }),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(10),
+  password: z.string().min(6, { message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" }),
+});
+
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export type UpdateStatusInput = z.infer<typeof updateStatusSchema>;
 export type DeliverOrderInput = z.infer<typeof deliverOrderSchema>;
 export type CreateDebtInput = z.infer<typeof createDebtSchema>;
 export type AddPaymentInput = z.infer<typeof addPaymentSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 export function errorResponse(code: string, message: string, details?: unknown) {
   return Response.json({ code, message, details }, { status: 400 });
