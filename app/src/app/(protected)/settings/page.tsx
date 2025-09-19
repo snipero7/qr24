@@ -101,21 +101,20 @@ export default function SettingsPage() {
 
       <div className="card tonal p-0">
         <div className="card-header flex-wrap gap-2" ref={navRef}>
-          <div className="hidden md:flex items-center gap-2 settings-tabs">
-            {tabsConfig.map(({ key, label, Icon }) => (
-              <button
-                key={key}
-                className={`icon-ghost inline-flex items-center gap-1 ${tab===key?'text-[var(--color-primary-700)]':''}`}
-                onClick={() => { setTab(key); setNavOpen(false); }}
-                title={label}
-                aria-label={label}
-                data-label={label}
-              >
-                <Icon size={24} />
-                <span className="text-sm">{label}</span>
-              </button>
-            ))}
-          </div>
+            <div className="hidden md:flex items-center gap-2 settings-tabs">
+              {tabsConfig.map(({ key, label, Icon }) => (
+                <button
+                  key={key}
+                  className={`icon-ghost inline-flex items-center gap-1 ${tab===key?'text-[var(--color-primary-700)]':''}`}
+                  onClick={() => { setTab(key); setNavOpen(false); }}
+                  title={label}
+                  aria-label={label}
+                  data-label={label}
+                >
+                  <Icon size={24} />
+                </button>
+              ))}
+            </div>
           <div className="md:hidden w-full" >
             <button
               type="button"
@@ -128,17 +127,16 @@ export default function SettingsPage() {
               <Menu size={22} />
             </button>
             {navOpen && (
-              <div className="mt-2 card space-y-1">
-                {tabsConfig.map(({ key, label, Icon }) => (
-                  <button
-                    key={key}
-                    className={`icon-ghost w-full justify-start ${tab===key?'text-[var(--color-primary-700)]':''}`}
-                    data-label={label}
-                    aria-label={label}
-                    onClick={() => { setTab(key); setNavOpen(false); }}
-                  >
-                    <Icon size={20} />
-                    <span className="text-sm">{label}</span>
+                <div className="mt-2 card space-y-1">
+                  {tabsConfig.map(({ key, label, Icon }) => (
+                    <button
+                      key={key}
+                      className={`icon-ghost w-full justify-start ${tab===key?'text-[var(--color-primary-700)]':''}`}
+                      aria-label={label}
+                      onClick={() => { setTab(key); setNavOpen(false); }}
+                    >
+                      <Icon size={20} />
+                      <span className="text-sm">{label}</span>
                   </button>
                 ))}
               </div>
