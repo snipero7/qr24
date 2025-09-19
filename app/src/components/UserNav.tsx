@@ -45,7 +45,7 @@ export function UserNav() {
             <UserCircle2 className="w-6 h-6" />
           </button>
           {open ? (
-            <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-[color:rgb(59_130_246_/_0.25)] bg-white/95 p-4 text-sm shadow-lg backdrop-blur dark:border-[color:rgb(96_165_250_/_0.35)] dark:bg-[color:rgb(30_41_59_/_0.9)]">
+            <div className="absolute left-0 top-full z-50 mt-2 w-60 translate-y-1 origin-top-left rounded-xl border border-[color:rgb(59_130_246_/_0.25)] bg-white p-4 text-sm shadow-lg backdrop-blur text-left [direction:ltr] [&_*]:text-[color:rgb(51_65_85)] dark:[&_*]:text-[color:rgb(203_213_225)] dark:border-[color:rgb(96_165_250_/_0.35)] dark:bg-[color:rgb(30_41_59_/_0.92)]">
               <div className="space-y-3">
                 <div>
                   <div className="font-semibold text-[var(--foreground)] leading-tight">
