@@ -9,7 +9,7 @@ import { showToast } from "@/components/ui/toast";
 
 type Props = {
   debtId: string;
-  variant?: "text" | "icon";
+  variant?: "text" | "icon" | "pill";
   onOpenChange?: (open: boolean) => void;
 };
 
@@ -42,12 +42,12 @@ export function AddPaymentDialog({ debtId, variant = "text", onOpenChange }: Pro
     }
   }
 
-  return (
-    <div>
-      {variant === "icon" ? (
+  const trigger = (() => {
+    if (variant === "icon") {
+      return (
         <button
           type="button"
-          onClick={()=>toggle(true)}
+          onClick={() => toggle(true)}
           title="سداد"
           aria-label="سداد"
           data-label="سداد"
@@ -55,9 +55,32 @@ export function AddPaymentDialog({ debtId, variant = "text", onOpenChange }: Pro
         >
           <Wallet className="w-5 h-5 text-[var(--color-primary)] dark:text-[var(--color-primary)]" />
         </button>
-      ) : (
-        <Button size="sm" onClick={()=>toggle(true)}>سداد</Button>
-      )}
+      );
+    }
+    if (variant === "pill") {
+      return (
+        <button
+          type="button"
+          onClick={() => toggle(true)}
+          className="action-pill action-pill--success"
+          title="إضافة دفعة"
+          aria-label="إضافة دفعة"
+        >
+          <Wallet className="w-4 h-4" />
+          <span>سداد</span>
+        </button>
+      );
+    }
+    return (
+      <Button size="sm" onClick={() => toggle(true)}>
+        سداد
+      </Button>
+    );
+  })();
+
+  return (
+    <div>
+      {trigger}
       <Dialog open={open} onOpenChange={toggle}>
         <DialogHeader title="سداد" />
         {error && <div className="text-red-600 text-sm mb-2">{error}</div>}

@@ -17,7 +17,7 @@ export function UserNav() {
           </span>
           <button
             onClick={() => signOut({ callbackUrl: "/signin" })}
-            className="icon-ghost no-label h-12 w-12 text-[var(--color-primary)] dark:text-[var(--color-primary)]"
+            className="inline-flex h-12 w-12 items-center justify-center rounded-xl text-[var(--color-primary)] transition-colors hover:text-[var(--color-primary-700)] dark:text-[color:rgb(148_163_184)] dark:hover:text-white"
             title="تسجيل الخروج"
             aria-label="تسجيل الخروج"
           >

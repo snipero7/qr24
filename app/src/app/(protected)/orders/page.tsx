@@ -5,7 +5,7 @@ import { DeliverDialog } from "@/components/DeliverDialog";
 import { QuickStatus } from "@/components/orders/QuickStatus";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Search, FileDown, RotateCcw, FileSpreadsheet } from "lucide-react";
+import { Search, FileDown, RotateCcw, FileSpreadsheet, Eye } from "lucide-react";
 import EditOrderDialog from "@/components/orders/EditOrderDialog";
 import DeleteOrderButton from "@/components/orders/DeleteOrderButton";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { normalizeNumberInput, toLatinDigits } from "@/lib/utils";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { getSettings } from "@/server/settings";
+import Link from "next/link";
 
 const statuses = ["NEW","IN_PROGRESS","WAITING_PARTS","READY","DELIVERED","CANCELED"] as const;
 
@@ -178,25 +179,25 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <Table className="orders-table">
             <THead>
               <TR>
-              <TH>الكود</TH>
-              <TH>العميل</TH>
-              <TH>الجوال</TH>
-              <TH>الخدمة</TH>
-              <TH>الحالة</TH>
-              <TH>واتساب</TH>
-              <TH>سريع</TH>
-              <TH>إجراء</TH>
-            </TR>
-          </THead>
+                <TH className="whitespace-nowrap text-right">الكود</TH>
+                <TH className="text-right">العميل</TH>
+                <TH className="whitespace-nowrap text-right">الجوال</TH>
+                <TH className="text-right">الخدمة</TH>
+                <TH className="text-center">الحالة</TH>
+                <TH className="text-center">واتساب</TH>
+                <TH className="text-center">سريع</TH>
+                <TH className="text-center">إجراء</TH>
+              </TR>
+            </THead>
           <TBody>
             {items.map((o) => (
                 <TR key={o.id} className="orders-row rounded-xl transition-all">
-                  <TD className="font-mono"><a className="text-blue-600" href={`/track/${o.code}`}>{toLatinDigits(o.code)}</a></TD>
-                  <TD>{o.customer.name}</TD>
-                  <TD>{toLatinDigits(o.customer.phone)}</TD>
-                <TD>{o.service}</TD>
-                <TD><StatusBadge status={o.status as any} /></TD>
-                <TD>
+                  <TD className="font-mono whitespace-nowrap text-right"><a className="text-blue-600" href={`/track/${o.code}`}>{toLatinDigits(o.code)}</a></TD>
+                  <TD className="text-right">{o.customer.name}</TD>
+                  <TD className="whitespace-nowrap text-right">{toLatinDigits(o.customer.phone)}</TD>
+                <TD className="text-right">{o.service}</TD>
+                <TD className="text-center"><StatusBadge status={o.status as any} /></TD>
+                <TD className="text-center">
                   {(() => {
                     const originalPrice = Number(o.originalPrice ?? 0);
                     const collected = Number(o.collectedPrice ?? 0);
@@ -219,21 +220,30 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                     );
                   })()}
                 </TD>
-                <TD><QuickStatus orderId={o.id} current={o.status} /></TD>
-                <TD>
-                  <a className="text-blue-600" href={`/orders/${o.id}`}>تفاصيل</a>
-                  {' '}·{' '}
-                  {(!(o.collectedPrice) && o.status !== "DELIVERED") ? (
-                    <>
-                      <EditOrderDialog order={{ id: o.id, service: o.service, deviceModel: (o as any).deviceModel || undefined, imei: (o as any).imei || undefined, originalPrice: Number(o.originalPrice) }} />
-                      {' '}·{' '}
-                    </>
-                  ) : null}
-                  <DeleteOrderButton orderId={o.id} />
-                  {o.status !== "DELIVERED" && (<>
-                    {' '}·{' '}
-                    <DeliverDialog orderId={o.id} defaultAmount={Number(o.originalPrice)} phone={toLatinDigits(o.customer.phone)} customerName={o.customer.name} />
-                  </>)}
+                <TD className="text-center"><QuickStatus orderId={o.id} current={o.status} /></TD>
+                <TD className="text-center">
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <Link href={`/orders/${o.id}`} className="action-pill" title="تفاصيل الطلب" aria-label="تفاصيل الطلب">
+                      <Eye size={18} />
+                      <span>تفاصيل</span>
+                    </Link>
+                    {(!(o.collectedPrice) && o.status !== "DELIVERED") ? (
+                      <EditOrderDialog
+                        order={{ id: o.id, service: o.service, deviceModel: (o as any).deviceModel || undefined, imei: (o as any).imei || undefined, originalPrice: Number(o.originalPrice) }}
+                        variant="pill"
+                      />
+                    ) : null}
+                    <DeleteOrderButton orderId={o.id} variant="pill" />
+                    {o.status !== "DELIVERED" && (
+                      <DeliverDialog
+                        orderId={o.id}
+                        defaultAmount={Number(o.originalPrice)}
+                        phone={toLatinDigits(o.customer.phone)}
+                        customerName={o.customer.name}
+                        variant="pill"
+                      />
+                    )}
+                  </div>
                 </TD>
               </TR>
             ))}

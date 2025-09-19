@@ -36,8 +36,8 @@ export default async function UsersPage() {
           <Table className="glass-table">
             <THead>
               <TR>
-                <TH className="text-center">الاسم</TH>
-                <TH className="text-center">البريد</TH>
+                <TH className="text-right">الاسم</TH>
+                <TH className="text-right">البريد</TH>
                 <TH className="text-center">الدور</TH>
                 <TH className="text-center">إجراءات</TH>
               </TR>
@@ -45,13 +45,13 @@ export default async function UsersPage() {
             <TBody>
               {users.map(u => (
                 <TR key={u.id} className="glass-row rounded-xl">
-                  <TD className="text-center">{u.name}</TD>
-                  <TD className="text-center">{u.email}</TD>
+                  <TD className="text-right">{u.name}</TD>
+                  <TD className="text-right">{u.email}</TD>
                   <TD className="text-center">{roleToArabic(u.role)}</TD>
                   <TD className="text-center">
-                    <div className="inline-flex items-center justify-center gap-3">
-                      <EditUserDialog user={{ id: u.id, name: u.name, email: u.email, role: u.role }} />
-                      <DeleteUserButton user={{ id: u.id, name: u.name, role: u.role }} />
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      <EditUserDialog user={{ id: u.id, name: u.name, email: u.email, role: u.role }} variant="pill" />
+                      <DeleteUserButton user={{ id: u.id, name: u.name, role: u.role }} variant="pill" />
                     </div>
                   </TD>
                 </TR>

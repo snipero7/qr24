@@ -5,8 +5,17 @@ import { Button } from "@/components/ui/button";
 import { showToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import { PencilLine } from "lucide-react";
 
-export default function EditOrderDialog({ order }: { order: { id: string; service: string; deviceModel?: string | null; imei?: string | null; originalPrice: number } }) {
+type TriggerVariant = "icon" | "pill";
+
+export default function EditOrderDialog({
+  order,
+  variant = "icon",
+}: {
+  order: { id: string; service: string; deviceModel?: string | null; imei?: string | null; originalPrice: number };
+  variant?: TriggerVariant;
+}) {
   const [open, setOpen] = useState(false);
   const [service, setService] = useState(order.service);
   const [deviceModel, setDeviceModel] = useState(order.deviceModel || "");
@@ -30,9 +39,22 @@ export default function EditOrderDialog({ order }: { order: { id: string; servic
     } finally { setLoading(false); }
   }
 
+  const isPill = variant === "pill";
+  const iconSize = isPill ? 18 : 22;
+
   return (
     <>
-      <button className="icon-ghost" title="تعديل" aria-label="تعديل" data-label="تعديل" onClick={()=>setOpen(true)}>✏️</button>
+      <button
+        type="button"
+        className={isPill ? "action-pill" : "icon-ghost"}
+        title="تعديل"
+        aria-label="تعديل"
+        data-label={isPill ? undefined : "تعديل"}
+        onClick={() => setOpen(true)}
+      >
+        <PencilLine size={iconSize} />
+        {isPill ? <span>تعديل</span> : null}
+      </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogHeader title="تعديل الطلب" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -5,7 +5,9 @@ import { showToast } from "@/components/ui/toast";
 import { Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm";
 
-export default function DeleteOrderButton({ orderId }: { orderId: string }) {
+type TriggerVariant = "icon" | "pill";
+
+export default function DeleteOrderButton({ orderId, variant = "icon" }: { orderId: string; variant?: TriggerVariant }) {
   const r = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,16 +32,21 @@ export default function DeleteOrderButton({ orderId }: { orderId: string }) {
     }
   }
 
+  const isPill = variant === "pill";
+  const iconSize = isPill ? 18 : 22;
+
   return (
     <>
       <button
-        className="icon-ghost text-red-600"
+        type="button"
+        className={isPill ? "action-pill action-pill--danger" : "icon-ghost text-red-600"}
         title="حذف"
         aria-label="حذف"
-        data-label="حذف"
+        data-label={isPill ? undefined : "حذف"}
         onClick={() => setOpen(true)}
       >
-        <Trash2 size={20} />
+        <Trash2 size={iconSize} />
+        {isPill ? <span>حذف</span> : null}
       </button>
       <ConfirmDialog
         open={open}

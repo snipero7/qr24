@@ -13,6 +13,8 @@ const ROLES = ["ADMIN", "TECH", "CLERK"] as const;
 
 type Role = (typeof ROLES)[number];
 
+type TriggerVariant = "icon" | "pill";
+
 type EditUserDialogProps = {
   user: {
     id: string;
@@ -20,9 +22,10 @@ type EditUserDialogProps = {
     email: string;
     role: Role | string;
   };
+  variant?: TriggerVariant;
 };
 
-export default function EditUserDialog({ user }: EditUserDialogProps) {
+export default function EditUserDialog({ user, variant = "icon" }: EditUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
@@ -40,20 +43,24 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
     setError(null);
   }
 
+  const isPill = variant === "pill";
+  const iconClass = isPill ? "w-4 h-4" : "w-5 h-5";
+
   return (
     <>
       <button
         type="button"
-        className="icon-ghost h-8 w-8"
-        data-label="تعديل"
+        className={isPill ? "action-pill" : "icon-ghost"}
         onClick={() => {
           resetForm();
           setOpen(true);
         }}
         title="تعديل"
         aria-label="تعديل المستخدم"
+        data-label={isPill ? undefined : "تعديل"}
       >
-        <Pencil className="w-4 h-4" />
+        <Pencil className={iconClass} />
+        {isPill ? <span>تعديل</span> : null}
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogHeader title="تعديل المستخدم" />

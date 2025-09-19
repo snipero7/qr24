@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Database, CloudUpload, Link as LinkIcon, Unlink, Trash2 } from "lucide-react";
+import { Database, CloudUpload, Link as LinkIcon, Unlink, Trash2, Save } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm";
 
 export function DataTab() {
@@ -126,7 +126,14 @@ export function DataTab() {
             </select>
           </div>
           <div className="flex justify-end">
-            <button className="icon-ghost" onClick={saveSchedule} title="حفظ الإعدادات" aria-label="حفظ الإعدادات" data-label="حفظ">حفظ</button>
+            <button
+              className="icon-ghost no-label"
+              onClick={saveSchedule}
+              title="حفظ الإعدادات"
+              aria-label="حفظ الإعدادات"
+            >
+              <Save size={20} />
+            </button>
           </div>
         </div>
       </div>

@@ -161,8 +161,19 @@ html[data-theme='dark'] .card.tonal--info, html.dark .card.tonal--info, html[dat
 .card-subtitle { @apply text-sm text-[var(--muted)]; }
 .card-section { @apply mt-4 pt-4 border-t border-black/5 dark:border-white/10; }
 .card-footer { @apply mt-4 pt-4 border-t border-black/5 dark:border-white/10 flex items-center justify-end gap-2; }
-.btn-primary { @apply inline-flex items-center justify-center bg-[var(--color-primary)] hover:bg-[var(--color-primary-700)] text-white rounded-lg h-10 px-4 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[color:rgb(29_78_216_/_0.5)]; }
-.btn-outline { @apply inline-flex items-center justify-center h-10 px-4 rounded-lg border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition-colors; }
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-xl h-10 px-4 font-medium text-white shadow-sm transition-colors;
+  @apply bg-[color:rgb(37_99_235)] hover:bg-[color:rgb(29_78_216)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[color:rgb(59_130_246_/_0.45)];
+  @apply dark:bg-[color:rgb(30_64_175)] dark:hover:bg-[color:rgb(30_58_138)] dark:focus:ring-[color:rgb(96_165_250_/_0.45)] dark:focus:ring-offset-0;
+}
+.btn-outline {
+  @apply inline-flex items-center justify-center rounded-xl h-10 px-4 font-medium shadow-sm transition-colors;
+  @apply border border-[color:rgb(59_130_246_/_0.35)] bg-transparent text-[color:rgb(100_116_139)];
+  color: rgb(100,116,139);
+  @apply hover:bg-[color:rgb(59_130_246_/_0.08)] hover:border-[color:rgb(59_130_246_/_0.45)];
+  @apply dark:border-[color:rgb(96_165_250_/_0.45)] dark:bg-transparent dark:text-[color:rgb(148_163_184)] dark:hover:bg-[color:rgb(37_99_235_/_0.28)] dark:hover:border-[color:rgb(96_165_250_/_0.55)];
+}
+.btn-outline svg { stroke: currentColor; }
 .input { @apply rounded-lg bg-[var(--surface)] p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[color:rgb(29_78_216_/_0.35)]; }
 
 /* Links contrast */
@@ -174,10 +185,35 @@ a { @apply text-[var(--color-primary)] hover:text-[var(--color-primary-700)]; }
 
 /* Standard size for icon-only buttons */
 .icon-btn { @apply inline-flex items-center justify-center h-12 w-12 sm:h-10 sm:w-10 p-0; }
+.action-pill {
+  @apply inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium shadow-sm transition-colors;
+  @apply border border-[color:rgb(59_130_246_/_0.35)] bg-transparent text-[color:rgb(100_116_139)];
+  color: rgb(100,116,139);
+  @apply hover:bg-[color:rgb(59_130_246_/_0.08)] hover:border-[color:rgb(59_130_246_/_0.45)];
+  @apply dark:border-[color:rgb(96_165_250_/_0.45)] dark:bg-transparent dark:text-[color:rgb(148_163_184)] dark:hover:bg-[color:rgb(37_99_235_/_0.28)] dark:hover:border-[color:rgb(96_165_250_/_0.55)];
+}
+.action-pill svg { @apply w-4 h-4; stroke: currentColor; }
+.action-pill--danger {
+  @apply border-[#FCA5A5] bg-transparent text-[color:rgb(100_116_139)];
+  color: rgb(100,116,139);
+  @apply hover:bg-[color:rgb(248_113_113_/_0.12)] hover:border-[#F87171];
+  @apply dark:text-[color:rgb(209_213_219)] dark:bg-transparent dark:border-red-500/60 dark:hover:bg-[color:rgb(239_68_68_/_0.28)];
+}
+.action-pill--success {
+  @apply border-[#6EE7B7] bg-transparent text-[color:rgb(100_116_139)];
+  color: rgb(100,116,139);
+  @apply hover:bg-[color:rgb(16_185_129_/_0.12)] hover:border-[color:rgb(16_185_129_/_0.6)];
+  @apply dark:text-[color:rgb(209_213_219)] dark:bg-transparent dark:border-[color:rgb(16_185_129_/_0.55)] dark:hover:bg-[color:rgb(16_185_129_/_0.32)];
+}
 .icon-ghost {
-  @apply inline-flex items-center gap-2 rounded-lg px-3 py-1.5 bg-transparent border border-transparent outline-none text-[var(--color-primary)] hover:text-[var(--color-primary-700)] transition-all;
+  @apply inline-flex items-center gap-2 rounded-xl px-3 py-1.5 font-medium shadow-sm transition-colors;
+  @apply border border-[color:rgb(59_130_246_/_0.35)] bg-transparent text-[color:rgb(100_116_139)];
+  color: rgb(100,116,139);
+  @apply hover:bg-[color:rgb(59_130_246_/_0.08)] hover:border-[color:rgb(59_130_246_/_0.45)];
+  @apply dark:border-[color:rgb(96_165_250_/_0.45)] dark:bg-transparent dark:text-[color:rgb(148_163_184)] dark:hover:bg-[color:rgb(37_99_235_/_0.28)] dark:hover:border-[color:rgb(96_165_250_/_0.55)];
 }
 [dir="rtl"] .icon-ghost { flex-direction: row-reverse; }
+.icon-ghost svg { stroke: currentColor; }
 .icon-ghost::after {
   content: '';
 }
@@ -191,8 +227,7 @@ a { @apply text-[var(--color-primary)] hover:text-[var(--color-primary-700)]; }
   content: none;
 }
 .icon-ghost.no-label {
-  gap: 0;
-  padding-inline: 0.75rem;
+  @apply gap-0 px-2.5;
   min-width: 2.75rem;
   min-height: 2.75rem;
   justify-content: center;

@@ -61,30 +61,30 @@ export default function DebtsTree({ groups }: { groups: DebtGroup[] }) {
             <div className="card-section overflow-x-auto p-0">
               <table className="min-w-full text-sm">
                 <thead className="bg-white dark:bg-white/5">
-                  <tr className="text-right">
-                    <th className="p-2 font-semibold">الخدمة</th>
-                    <th className="p-2 font-semibold">المبلغ</th>
-                    <th className="p-2 font-semibold">المدفوع</th>
-                    <th className="p-2 font-semibold">المتبقي</th>
-                    <th className="p-2 font-semibold">الحالة</th>
-                    <th className="p-2 font-semibold">تاريخ</th>
-                    <th className="p-2 font-semibold">إجراء</th>
+                  <tr>
+                    <th className="p-2 text-right font-semibold">الخدمة</th>
+                    <th className="p-2 text-right font-semibold">المبلغ</th>
+                    <th className="p-2 text-right font-semibold">المدفوع</th>
+                    <th className="p-2 text-right font-semibold">المتبقي</th>
+                    <th className="p-2 text-center font-semibold">الحالة</th>
+                    <th className="p-2 text-center font-semibold">تاريخ</th>
+                    <th className="p-2 text-center font-semibold">إجراء</th>
                   </tr>
                 </thead>
                 <tbody>
                   {g.debts.map((d) => (
                     <tr key={d.id} className="bg-white dark:bg-transparent hover:bg-black/5 dark:hover:bg-white/10">
-                      <td className="p-2">{editing === d.id ? (
+                      <td className="p-2 text-right">{editing === d.id ? (
                         <Input defaultValue={d.service} className="input h-8" id={`svc-${d.id}`} />
                       ) : d.service}</td>
-                      <td className="p-2 tabular-nums">{editing === d.id ? (
+                      <td className="p-2 text-right tabular-nums">{editing === d.id ? (
                         <AmountPad name={`amount-${d.id}`} defaultValue={d.amount} onChangeValue={(n)=>{ (window as any)[`amountVal_${d.id}`]=n; }} />
                       ) : d.amount}</td>
-                      <td className="p-2 tabular-nums">{d.paid}</td>
-                      <td className="p-2 tabular-nums">{d.remaining}</td>
-                      <td className="p-2"><StatusBadge status={d.status as any} /></td>
-                      <td className="p-2">{formatYMD(d.createdAt)}</td>
-                      <td className="p-2">
+                      <td className="p-2 text-right tabular-nums">{d.paid}</td>
+                      <td className="p-2 text-right tabular-nums">{d.remaining}</td>
+                      <td className="p-2 text-center"><StatusBadge status={d.status as any} /></td>
+                      <td className="p-2 text-center whitespace-nowrap">{formatYMD(d.createdAt)}</td>
+                      <td className="p-2 text-center">
                         <DebtActions
                           debt={d}
                           phone={g.phone}

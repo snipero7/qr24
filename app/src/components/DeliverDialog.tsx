@@ -11,7 +11,21 @@ import { HandCoins, Check } from "lucide-react";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { templates, storeConfig } from "@/config/notifications";
 
-export function DeliverDialog({ orderId, defaultAmount, phone, customerName }: { orderId: string; defaultAmount?: number; phone?: string | null; customerName?: string }) {
+type TriggerVariant = "icon" | "pill";
+
+export function DeliverDialog({
+  orderId,
+  defaultAmount,
+  phone,
+  customerName,
+  variant = "icon",
+}: {
+  orderId: string;
+  defaultAmount?: number;
+  phone?: string | null;
+  customerName?: string;
+  variant?: TriggerVariant;
+}) {
   const [open, setOpen] = useState(false);
   const [amountStr, setAmountStr] = useState<string>("");
   const [extraStr, setExtraStr] = useState<string>("");
@@ -179,18 +193,22 @@ export function DeliverDialog({ orderId, defaultAmount, phone, customerName }: {
     setDiscountApplied(Math.max(0, eff - next));
   }
 
+  const isPill = variant === "pill";
+  const iconSize = isPill ? 18 : 22;
+
   return (
     <div>
-      <Button
-        variant="ghost"
-        className="icon-ghost"
+      <button
+        type="button"
+        className={isPill ? "action-pill action-pill--success" : "icon-ghost"}
         title="تسليم"
         aria-label="تسليم"
-        data-label="تسليم"
+        data-label={isPill ? undefined : "تسليم"}
         onClick={() => setOpen(true)}
       >
-        <HandCoins size={24} />
-      </Button>
+        <HandCoins size={iconSize} />
+        {isPill ? <span>تسليم</span> : null}
+      </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogHeader title="تحصيل وتسليم" />
         {error && (

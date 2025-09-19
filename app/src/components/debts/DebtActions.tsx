@@ -5,7 +5,7 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { debtTemplateForStatus } from "@/config/notifications";
 import { toLatinDigits } from "@/lib/utils";
 import { AddPaymentDialog } from "@/components/debts/AddPaymentDialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Check, X } from "lucide-react";
 import { useEffect } from "react";
 
 export function DebtActions({
@@ -37,7 +37,7 @@ export function DebtActions({
   }, [isPaid, isEditing, setEditingId, debt.id]);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center justify-center gap-2">
       <WhatsAppButton
         phone={phone ? toLatinDigits(phone) : phone}
         templateKey={debtTemplateForStatus(debt.status) as any}
@@ -47,32 +47,36 @@ export function DebtActions({
       {!isPaid && (
         <AddPaymentDialog
           debtId={debt.id}
-          variant="icon"
+          variant="pill"
           onOpenChange={(open) => setAllowCollapse(!open)}
         />
       )}
       {!isPaid && isEditing ? (
         <>
           <button
-            className="btn-primary h-8 px-3"
+            className="action-pill action-pill--success"
             onClick={async (e) => {
               e.stopPropagation();
               const svc = (document.getElementById(`svc-${debt.id}`) as HTMLInputElement)?.value;
               const amt = (window as any)[`amountVal_${debt.id}`];
               await onSave(svc, amt);
               setEditingId(null);
+              setAllowCollapse(true);
             }}
           >
-            حفظ
+            <Check className="w-4 h-4" />
+            <span>حفظ</span>
           </button>
           <button
-            className="btn-outline h-8 px-3"
+            className="action-pill"
             onClick={(e) => {
               e.stopPropagation();
               setEditingId(null);
+              setAllowCollapse(true);
             }}
           >
-            إلغاء
+            <X className="w-4 h-4" />
+            <span>إلغاء</span>
           </button>
         </>
       ) : (
@@ -81,27 +85,28 @@ export function DebtActions({
             <button
               title="تعديل"
               aria-label="تعديل"
-              data-label="تعديل"
-              className="icon-ghost"
+              className="action-pill"
               onClick={(e) => {
                 e.stopPropagation();
                 setEditingId(debt.id);
+                setAllowCollapse(false);
               }}
             >
-              <Pencil className="w-5 h-5 text-[var(--color-primary)]" />
+              <Pencil className="w-4 h-4" />
+              <span>تعديل</span>
             </button>
           )}
           <button
             title="حذف"
             aria-label="حذف"
-            data-label="حذف"
-            className="icon-ghost text-red-600"
+            className="action-pill action-pill--danger"
             onClick={(e) => {
               e.stopPropagation();
               onDelete();
             }}
           >
-            <Trash2 className="w-5 h-5" />
+            <Trash2 className="w-4 h-4" />
+            <span>حذف</span>
           </button>
         </>
       )}

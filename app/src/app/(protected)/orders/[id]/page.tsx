@@ -123,13 +123,24 @@ export default async function OrderShow({ params }: { params: Promise<{ id: stri
         </div>
       </section>
 
-      <div className="flex gap-4 items-center">
+      <div className="flex flex-wrap items-center gap-3">
         <ChangeStatusForm orderId={o.id} current={o.status} />
         {(!(o.collectedPrice) && o.status !== "DELIVERED") ? (
-          <EditOrderDialog order={{ id: o.id, service: o.service, deviceModel: o.deviceModel || undefined, imei: o.imei || undefined, originalPrice: Number(o.originalPrice) }} />
+          <EditOrderDialog
+            order={{ id: o.id, service: o.service, deviceModel: o.deviceModel || undefined, imei: o.imei || undefined, originalPrice: Number(o.originalPrice) }}
+            variant="pill"
+          />
         ) : null}
-        {isAdmin && <DeleteOrderButton orderId={o.id} />}
-        {o.status !== "DELIVERED" && <DeliverDialog orderId={o.id} defaultAmount={Number(o.originalPrice)} phone={toLatinDigits(o.customer.phone)} customerName={o.customer.name} />}
+        {isAdmin && <DeleteOrderButton orderId={o.id} variant="pill" />}
+        {o.status !== "DELIVERED" && (
+          <DeliverDialog
+            orderId={o.id}
+            defaultAmount={Number(o.originalPrice)}
+            phone={toLatinDigits(o.customer.phone)}
+            customerName={o.customer.name}
+            variant="pill"
+          />
+        )}
         {(() => {
           const originalPrice = Number(o.originalPrice ?? 0);
           const collected = Number(o.collectedPrice ?? 0);

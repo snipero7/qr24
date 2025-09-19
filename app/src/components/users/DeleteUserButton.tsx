@@ -6,30 +6,37 @@ import { Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm";
 import { showToast } from "@/components/ui/toast";
 
+type TriggerVariant = "icon" | "pill";
+
 type DeleteUserButtonProps = {
   user: {
     id: string;
     name: string;
     role: string;
   };
+  variant?: TriggerVariant;
 };
 
-export default function DeleteUserButton({ user }: DeleteUserButtonProps) {
+export default function DeleteUserButton({ user, variant = "icon" }: DeleteUserButtonProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+
+  const isPill = variant === "pill";
+  const iconClass = isPill ? "w-4 h-4" : "w-5 h-5";
 
   return (
     <>
       <button
         type="button"
-        className="icon-ghost h-8 w-8 text-red-600 hover:text-red-700"
-        data-label="حذف"
+        className={isPill ? "action-pill action-pill--danger" : "icon-ghost text-red-600 hover:text-red-700"}
         onClick={() => setOpen(true)}
         title="حذف"
         aria-label="حذف المستخدم"
+        data-label={isPill ? undefined : "حذف"}
       >
-        <Trash2 className="w-4 h-4" />
+        <Trash2 className={iconClass} />
+        {isPill ? <span>حذف</span> : null}
       </button>
       <ConfirmDialog
         open={open}
