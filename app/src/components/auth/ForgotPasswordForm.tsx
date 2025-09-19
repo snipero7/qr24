@@ -59,7 +59,7 @@ export default function ForgotPasswordForm() {
             />
           </div>
           <Button disabled={loading} className="w-full" type="submit">
-            {loading ? "جارٍ الإرسال..." : "إرسال الرابط"}
+            {loading ? "جارٍ إعادة التعيين..." : "إعادة التعيين"}
           </Button>
         </form>
         {message && <div className="text-sm text-blue-600">{message}</div>}
