@@ -126,49 +126,51 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     <div className="space-y-4">
       <h1 className="text-xl font-bold">الطلبات</h1>
       <ActionBar>
-        <Input type="search" inputMode="search" name="q" defaultValue={qDisplay} placeholder="بحث بالكود أو الجوال" className="input sm:col-span-2" />
-        <PhoneInput name="phone" defaultValue={phoneNorm} placeholder="رقم الجوال" className="input" />
-        <select name="status" defaultValue={status} className="input">
-          <option value="">كل الحالات</option>
-          {statuses.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
-        </select>
-        <Input type="date" name="createdFrom" defaultValue={createdFrom} className="input" />
-        <Input type="date" name="createdTo" defaultValue={createdTo} className="input" />
-        <Input type="text" inputMode="decimal" name="priceMin" defaultValue={priceMinStr} placeholder="سعر من (مثال: 100)" title="يتم تحويل الأرقام تلقائيًا إلى الإنجليزية" className="input" />
-        <Input type="text" inputMode="decimal" name="priceMax" defaultValue={priceMaxStr} placeholder="سعر إلى (مثال: 2000)" title="يتم تحويل الأرقام تلقائيًا إلى الإنجليزية" className="input" />
-        <div className="flex gap-2 sm:col-span-2">
-          <button className="icon-ghost" title="بحث" aria-label="بحث" data-label="بحث">
-            <Search size={24} />
-          </button>
-          {(() => {
-            const params = new URLSearchParams({
-              q: qDisplay,
-              status: status || "",
-              phone: phoneNorm,
-              createdFrom,
-              createdTo,
-              priceMin: priceMinStr || "",
-              priceMax: priceMaxStr || "",
-            });
-            const csvHref = `/api/orders/export?${params.toString()}`;
-            const excelParams = new URLSearchParams(params);
-            excelParams.set("format", "excel");
-            const excelHref = `/api/orders/export?${excelParams.toString()}`;
-            return (
-              <>
-                <a className="icon-ghost" title="تصدير CSV" aria-label="تصدير CSV" data-label="تصدير CSV" href={csvHref}>
-                  <FileDown size={24} />
-                </a>
-                <a className="icon-ghost" title="تصدير Excel" aria-label="تصدير Excel" data-label="تصدير Excel" href={excelHref}>
-                  <FileSpreadsheet size={24} />
-                </a>
-              </>
-            );
-          })()}
-          <a className="icon-ghost" title="إعادة تعيين" aria-label="إعادة تعيين" data-label="إعادة" href="/orders">
-            <RotateCcw size={24} />
-          </a>
-        </div>
+        <form action="/orders" method="get" className="contents">
+          <Input type="search" inputMode="search" name="q" defaultValue={qDisplay} placeholder="بحث بالكود أو الجوال" className="input sm:col-span-2" />
+          <PhoneInput name="phone" defaultValue={phoneNorm} placeholder="رقم الجوال" className="input" />
+          <select name="status" defaultValue={status} className="input">
+            <option value="">كل الحالات</option>
+            {statuses.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
+          </select>
+          <Input type="date" name="createdFrom" defaultValue={createdFrom} className="input" />
+          <Input type="date" name="createdTo" defaultValue={createdTo} className="input" />
+          <Input type="text" inputMode="decimal" name="priceMin" defaultValue={priceMinStr} placeholder="سعر من (مثال: 100)" title="يتم تحويل الأرقام تلقائيًا إلى الإنجليزية" className="input" />
+          <Input type="text" inputMode="decimal" name="priceMax" defaultValue={priceMaxStr} placeholder="سعر إلى (مثال: 2000)" title="يتم تحويل الأرقام تلقائيًا إلى الإنجليزية" className="input" />
+          <div className="flex gap-2 sm:col-span-2">
+            <button type="submit" className="icon-ghost" title="بحث" aria-label="بحث" data-label="بحث">
+              <Search size={24} />
+            </button>
+            {(() => {
+              const params = new URLSearchParams({
+                q: qDisplay,
+                status: status || "",
+                phone: phoneNorm,
+                createdFrom,
+                createdTo,
+                priceMin: priceMinStr || "",
+                priceMax: priceMaxStr || "",
+              });
+              const csvHref = `/api/orders/export?${params.toString()}`;
+              const excelParams = new URLSearchParams(params);
+              excelParams.set("format", "excel");
+              const excelHref = `/api/orders/export?${excelParams.toString()}`;
+              return (
+                <>
+                  <a className="icon-ghost" title="تصدير CSV" aria-label="تصدير CSV" data-label="تصدير CSV" href={csvHref}>
+                    <FileDown size={24} />
+                  </a>
+                  <a className="icon-ghost" title="تصدير Excel" aria-label="تصدير Excel" data-label="تصدير Excel" href={excelHref}>
+                    <FileSpreadsheet size={24} />
+                  </a>
+                </>
+              );
+            })()}
+            <a className="icon-ghost" title="إعادة تعيين" aria-label="إعادة تعيين" data-label="إعادة" href="/orders">
+              <RotateCcw size={24} />
+            </a>
+          </div>
+        </form>
       </ActionBar>
 
       <div className="card tonal p-0">
