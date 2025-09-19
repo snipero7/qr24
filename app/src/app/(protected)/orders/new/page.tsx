@@ -22,11 +22,13 @@ export default function NewOrderPage() {
     }
     setLoading(true);
     setError(null);
-      const payload = {
+    const rawNotes = (formData.get("notes") as string) || "";
+    const notes = rawNotes.trim() || undefined;
+    const payload = {
       customer: {
         name: formData.get("name") as string,
         phone: normalizeNumberInput(String(formData.get("phone") || "")),
-        notes: (formData.get("notes") as string) || undefined,
+        notes,
       },
       deviceModel: (formData.get("deviceModel") as string) || undefined,
       imei: (formData.get("imei") as string) || undefined,

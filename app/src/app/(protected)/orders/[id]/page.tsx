@@ -57,9 +57,10 @@ export default async function OrderShow({ params }: { params: Promise<{ id: stri
           <Info label="الحالة" value={<StatusBadge status={o.status as any} />} />
           <Info label="العميل" value={`${o.customer.name} (${toLatinDigits(o.customer.phone)})`} />
           <Info label="الخدمة" value={o.service} />
-        {o.deviceModel && <Info label="الجهاز" value={o.deviceModel} />}
-        {o.imei && <Info label="IMEI" value={o.imei} />}
-        <Info label="السعر الأساسي" value={toLatinDigits(Number(o.originalPrice))} />
+          {o.customer.notes ? <Info label="ملاحظات" value={<span className="whitespace-pre-wrap">{o.customer.notes}</span>} /> : null}
+          {o.deviceModel && <Info label="الجهاز" value={o.deviceModel} />}
+          {o.imei && <Info label="IMEI" value={o.imei} />}
+          <Info label="السعر الأساسي" value={toLatinDigits(Number(o.originalPrice))} />
         { (o as any).paymentMethod && (
           <Info
             label="وسيلة الدفع"
