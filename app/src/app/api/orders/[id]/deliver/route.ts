@@ -63,7 +63,11 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       const fileName = `${order.code}.pdf`;
       const key = path.posix.join("receipts", fileName);
       receiptUrl = await saveReceipt(pdfBuf, key, "application/pdf");
-      await prisma.order.update({ where: { id: delivered.id }, data: { receiptUrl } });
+      if (delivered && delivered.id) {
+        await prisma.order.update({ where: { id: delivered.id }, data: { receiptUrl } });
+      } else {
+        await prisma.order.update({ where: { id }, data: { receiptUrl } });
+      }
     } catch (err: any) {
       logger.warn({ err: String(err?.message || err) }, "receipt_generation_failed");
     }
